@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e56">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kößler Holz">
+<link rel="manifest" id="manifest">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='512'%20height='512'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='104'%20fill='%23b5651d'/%3E%3Cg%20transform='translate(112,112)%20scale(12)'%20fill='%23ffffff'%3E%3Cpath%20d='M12%202%206%209h3l-4%205h3l-4%205h16l-4-5h3l-4-5h3z'/%3E%3Crect%20x='11'%20y='19'%20width='2'%20height='3'/%3E%3C/g%3E%3C/svg%3E">
+<title>Kößler Holzberechnung</title>
+<style>
+  :root{
+    --bg:#f4f2ec; --card:#ffffff; --line:#e4e0d6;
+    --text:#2b2a27; --muted:#78756c;
+    --green:#0f6e56; --green-soft:#e1f5ee;
+    --wood:#b5651d; --wood-dark:#8a4c14;
+    --danger:#c0392b; --danger-soft:#fbeaea;
+    --radius:14px;
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1a1917; --card:#26241f; --line:#38352e;
+      --text:#f2efe8; --muted:#a29d92;
+      --green:#1d9e75; --green-soft:#123c30;
+      --wood:#d98b3f; --wood-dark:#b5651d;
+      --danger:#e57368; --danger-soft:#3a201d;
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--text);
+    padding:14px 14px calc(24px + var(--safe-b));
+    max-width:560px; margin:0 auto;
+    -webkit-text-size-adjust:100%;
+  }
+
+  /* Kopf */
+  header{display:flex; align-items:center; gap:11px; margin-bottom:14px;}
+  .logo{width:40px; height:40px; border-radius:11px; background:var(--wood);
+        display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .logo svg{width:24px; height:24px; fill:#fff;}
+  header h1{font-size:18px; font-weight:600; margin:0; line-height:1.15; cursor:pointer; overflow-wrap:anywhere;}
+  header p{font-size:12.5px; color:var(--muted); margin:2px 0 0;}
+  .rename-btn{width:36px; height:36px; border:none; background:transparent; border-radius:9px; flex-shrink:0;
+              display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .rename-btn:active{background:var(--card);}
+  .rename-btn svg{width:17px; height:17px; fill:var(--muted);}
+
+  /* Gesamt-Karte */
+  .total{background:var(--green); border-radius:var(--radius); padding:16px 18px; margin-bottom:14px; color:#fff;}
+  .total .lbl{font-size:12.5px; opacity:.85;}
+  .total .val{font-size:31px; font-weight:600; line-height:1.15; margin:2px 0;}
+  .total .val small{font-size:16px; font-weight:500; opacity:.9;}
+  .total .euro{font-size:16px; font-weight:600; margin-top:3px;}
+  .total .euro span{font-size:12px; font-weight:400; opacity:.85;}
+  .total .sub{font-size:12.5px; opacity:.85;}
+
+  /* Karten */
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);}
+  .pad{padding:14px;}
+  .mb{margin-bottom:14px;}
+  .card-title{font-size:13px; font-weight:600; margin:0 0 11px; display:flex; align-items:center; gap:7px;}
+  .card-title svg{width:16px; height:16px; fill:var(--muted);}
+
+  .row{display:flex; gap:10px; margin-bottom:11px;}
+  .row:last-child{margin-bottom:0;}
+  .field{flex:1; min-width:0;}
+  .field.small{flex:0 0 70px;}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-weight:500;}
+  input[type=text], input[type=number], select{
+    width:100%; height:44px; border:1px solid var(--line); border-radius:10px;
+    background:var(--bg); color:var(--text); font-size:16px; padding:0 12px;
+    font-family:inherit; appearance:none; -webkit-appearance:none;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--green); background:var(--card);}
+  textarea{width:100%; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--text);
+           font-size:16px; padding:10px 12px; font-family:inherit; resize:vertical; line-height:1.4;}
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378756c' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat; background-position:right 11px center; padding-right:34px;
+  }
+
+  .toggle-row{display:flex; align-items:center; justify-content:space-between;
+              padding:11px 2px; border-top:1px solid var(--line); margin-top:3px;}
+  .toggle-row .t-label{font-size:14.5px; display:flex; align-items:center; gap:7px;}
+  .toggle-row .t-label svg{width:17px; height:17px; fill:var(--muted);}
+  .switch{position:relative; width:48px; height:28px; flex-shrink:0;}
+  .switch input{opacity:0; width:100%; height:100%; margin:0; position:absolute; z-index:2;}
+  .slider{position:absolute; inset:0; background:var(--line); border-radius:15px; transition:.2s;}
+  .slider::before{content:""; position:absolute; width:22px; height:22px; border-radius:50%;
+                  background:#fff; top:3px; left:3px; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.25);}
+  .switch input:checked + .slider{background:var(--green);}
+  .switch input:checked + .slider::before{transform:translateX(20px);}
+
+  .reveal{overflow:hidden; transition:max-height .22s ease, opacity .2s; max-height:0; opacity:0;}
+  .reveal.open{max-height:170px; opacity:1; margin-top:6px;}
+  .species-hint{font-size:11.5px; color:var(--muted); margin-top:7px; line-height:1.4; display:none;}
+  .species-hint.show{display:block;}
+
+  .btn-add{width:100%; height:48px; margin-top:12px; border:none; border-radius:11px;
+           background:var(--wood); color:#fff; font-size:16px; font-weight:600;
+           display:flex; align-items:center; justify-content:center; gap:8px; font-family:inherit; cursor:pointer;}
+  .btn-add:active{background:var(--wood-dark);}
+  .btn-add svg{width:19px; height:19px; fill:#fff;}
+  .btn-cancel{width:100%; height:42px; margin-top:8px; border:1px solid var(--line);
+              border-radius:11px; background:transparent; color:var(--muted); font-size:14.5px;
+              font-family:inherit; cursor:pointer; display:none;}
+  body.editing .btn-cancel{display:block;}
+
+  /* Preis-Aufschlüsselung */
+  .breakdown{border-top:1px solid var(--line); margin-top:11px; padding-top:9px; font-size:13.5px; display:none;}
+  .breakdown.show{display:block;}
+  .breakdown .b-row{display:flex; justify-content:space-between; padding:3px 0; color:var(--muted);}
+  .breakdown .b-row.total{color:var(--text); font-weight:600; font-size:15px; padding-top:6px;}
+
+  /* Liste */
+  .list-head{display:flex; align-items:center; justify-content:space-between; margin:4px 2px 9px;}
+  .list-head h2{font-size:14px; font-weight:600; margin:0; color:var(--muted);}
+  .clear-btn{background:none; border:none; color:var(--danger); font-size:13px; font-family:inherit; cursor:pointer; padding:4px 6px;}
+  #list{display:flex; flex-direction:column; gap:9px;}
+  .item{display:flex; align-items:center; gap:8px; padding:12px 13px;}
+  .item.active{border-color:var(--green); box-shadow:0 0 0 1px var(--green);}
+  .item .info{flex:1; min-width:0;}
+  .item .fm{font-size:16px; font-weight:600; line-height:1.2;}
+  .item .fm .mult{font-size:12.5px; color:var(--muted); font-weight:400;}
+  .item .meta{font-size:12.5px; color:var(--muted); margin-top:2px; line-height:1.35;}
+  .icon-btn{width:38px; height:38px; border:none; background:transparent; border-radius:9px;
+            display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;}
+  .icon-btn:active{background:var(--bg);}
+  .icon-btn svg{width:19px; height:19px;}
+  .icon-btn.edit svg{fill:var(--muted);}
+  .icon-btn.del svg{fill:var(--danger);}
+  .empty{text-align:center; color:var(--muted); font-size:13.5px; padding:26px 16px; line-height:1.6;}
+  .empty svg{width:34px; height:34px; fill:var(--line); display:block; margin:0 auto 8px;}
+
+  .btn-pdf{width:100%; height:50px; margin-top:14px; border:1px solid var(--green); border-radius:11px;
+           background:transparent; color:var(--green); font-size:16px; font-weight:600;
+           display:flex; align-items:center; justify-content:center; gap:8px; font-family:inherit; cursor:pointer;}
+  .btn-pdf:active{background:var(--green-soft);}
+  .btn-pdf svg{width:20px; height:20px; fill:var(--green);}
+
+  .footnote{font-size:11px; color:var(--muted); text-align:center; margin-top:16px; line-height:1.5;}
+
+  /* Kamera-Mess-Knopf */
+  .btn-measure{width:100%; height:40px; margin:2px 0 0; border:1px dashed var(--line); border-radius:10px;
+               background:transparent; color:var(--muted); font-size:14px; font-family:inherit;
+               display:flex; align-items:center; justify-content:center; gap:7px; cursor:pointer;}
+  .btn-measure:active{background:var(--bg);}
+  .btn-measure svg{width:17px; height:17px; fill:var(--muted);}
+
+  /* Kamera-Messung (Vollbild-Overlay, immer dunkel) */
+  .cam-overlay{position:fixed; inset:0; background:#0d0d0d; z-index:1000; display:none; flex-direction:column; color:#fff;}
+  .cam-overlay.open{display:flex;}
+  .cam-head{display:flex; align-items:center; justify-content:space-between;
+            padding:14px; padding-top:calc(14px + env(safe-area-inset-top,0px)); border-bottom:1px solid #262626;}
+  .cam-head h3{margin:0; font-size:16px; font-weight:600;}
+  .cam-close{background:none; border:none; color:#fff; font-size:28px; line-height:1; padding:0 6px; cursor:pointer;}
+  .cam-stage{flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:8px; min-height:0;}
+  #camCanvas{touch-action:none; background:#000; border-radius:8px; display:block;}
+  .cam-empty{text-align:center; padding:24px; max-width:340px;}
+  .cam-shoot{display:inline-flex; align-items:center; gap:9px; background:var(--wood); color:#fff; border:none;
+             border-radius:12px; padding:14px 22px; font-size:16px; font-weight:600; font-family:inherit; cursor:pointer;}
+  .cam-shoot svg{width:22px; height:22px; fill:#fff;}
+  .cam-ctrl{background:#1a1a1a; padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px)); border-top:1px solid #262626;}
+  .cam-legend{font-size:12.5px; color:#bbb; margin-bottom:10px;}
+  .cam-legend .dot{display:inline-block; width:11px; height:11px; border-radius:50%; vertical-align:-1px; margin-right:5px;}
+  .cam-legend .dot.g{background:#39d98a;}
+  .cam-legend .dot.o{background:#ffa53a; margin-left:14px;}
+  .cam-refrow{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:14px; color:#ddd;}
+  .cam-refrow input{width:88px; height:40px; background:#0d0d0d; border:1px solid #333; color:#fff;
+                    border-radius:9px; padding:0 12px; font-size:16px; font-family:inherit;}
+  .cam-readout{font-size:15px; color:#fff; margin-bottom:12px; min-height:20px;}
+  .cam-readout b{font-size:19px; color:#39d98a;}
+  .cam-buttons{display:flex; gap:10px;}
+  .cam-btn{flex:1; height:46px; border-radius:11px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; border:none;}
+  .cam-btn.ghost{background:transparent; border:1px solid #444; color:#ddd;}
+  .cam-btn.primary{background:var(--green); color:#fff;}
+
+  /* --- Druck / PDF --- */
+  #printArea{display:none;}
+  @media print{
+    @page{margin:16mm;}
+    html,body{background:#fff !important; color:#000 !important; max-width:none; padding:0; margin:0;}
+    body > *:not(#printArea){display:none !important;}
+    #printArea{display:block !important; color:#000; font-family:-apple-system,"Segoe UI",Roboto,sans-serif;}
+    #printArea .p-brand{font-size:20px; font-weight:700; color:#0f6e56;}
+    #printArea .p-rule{border:none; border-top:2px solid #0f6e56; margin:6px 0 14px;}
+    #printArea .p-parties{display:flex; justify-content:space-between; gap:20px; margin-bottom:18px; font-size:12px; line-height:1.5;}
+    #printArea .p-party.right{text-align:right;}
+    #printArea .p-plabel{color:#888; font-size:9.5px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px;}
+    #printArea .p-pdate{color:#666; margin-top:6px;}
+    #printArea .p-headline{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;}
+    #printArea .p-sub{font-size:13px; color:#555;}
+    #printArea .p-date{font-size:12px; color:#555;}
+    #printArea table{width:100%; border-collapse:collapse; font-size:11px;}
+    #printArea th{text-align:left; border-bottom:1.5px solid #333; padding:5px 4px; font-weight:600;}
+    #printArea td{border-bottom:0.5px solid #ccc; padding:5px 4px;}
+    #printArea td.r, #printArea th.r{text-align:right;}
+    #printArea .p-tot{margin-top:14px; margin-left:auto; width:60%; font-size:13px;}
+    #printArea .p-tot .pt-row{display:flex; justify-content:space-between; padding:3px 0;}
+    #printArea .p-tot .pt-row.grand{border-top:1.5px solid #333; margin-top:4px; padding-top:6px; font-weight:700; font-size:15px;}
+    #printArea .p-pay{margin-top:18px; font-size:11.5px; color:#333; line-height:1.5;}
+    #printArea .p-foot{margin-top:24px; font-size:10px; color:#777; border-top:0.5px solid #ccc; padding-top:6px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M12 2 6 9h3l-4 5h3l-4 5h16l-4-5h3l-4-5h3z"/><rect x="11" y="19" width="2" height="3"/></svg>
+  </div>
+  <div style="flex:1; min-width:0;">
+    <h1 id="appTitle">Kößler Holzberechnung</h1>
+    <p>Festmeter (Fm) berechnen</p>
+  </div>
+  <button type="button" class="rename-btn" id="renameBtn" aria-label="App-Namen ändern" title="App-Namen ändern">
+    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>
+  </button>
+</header>
+
+<div class="total" role="status" aria-live="polite">
+  <div class="lbl">Gesamt · <span id="count">0 Stämme</span></div>
+  <div class="val"><span id="totalVal">0,000</span> <small>Fm</small></div>
+  <div class="euro" id="totalEuro" style="display:none;"></div>
+  <div class="sub" id="totalSub">Länge × Mittendurchmesser eingeben</div>
+</div>
+
+<!-- Eingabe -->
+<form class="card pad mb" id="form" autocomplete="off">
+  <div class="row">
+    <div class="field">
+      <label for="length">Länge (m)</label>
+      <input type="text" id="length" inputmode="decimal" placeholder="4,20">
+    </div>
+    <div class="field">
+      <label for="diameter">Ø Mitte (cm)</label>
+      <input type="text" id="diameter" inputmode="decimal" placeholder="32">
+    </div>
+    <div class="field small">
+      <label for="qty">Anzahl</label>
+      <input type="number" id="qty" inputmode="numeric" step="1" min="1" value="1">
+    </div>
+  </div>
+
+  <button type="button" class="btn-measure" id="measureBtn">
+    <svg viewBox="0 0 24 24"><path d="M9 3 7.5 5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2h-3.5L15 3zm3 5a5 5 0 110 10 5 5 0 010-10zm0 2.2A2.8 2.8 0 1012 15.8 2.8 2.8 0 0012 10.2z"/></svg>
+    Ø per Foto messen
+  </button>
+  <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none;">
+
+  <div class="toggle-row">
+    <span class="t-label">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 3a7 7 0 017 7 7 7 0 01-7 7 7 7 0 01-7-7 7 7 0 017-7zm0 3a4 4 0 100 8 4 4 0 000-8z"/></svg>
+      Rinde abziehen
+    </span>
+    <label class="switch">
+      <input type="checkbox" id="barkToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="reveal" id="speciesRow">
+    <label for="species">Baumart (Rindenabzug)</label>
+    <select id="species">
+      <option value="fichte">Fichte</option>
+      <option value="tanne">Tanne</option>
+      <option value="kiefer">Kiefer</option>
+      <option value="laerche">Lärche</option>
+      <option value="douglasie">Douglasie</option>
+      <option value="eiche">Eiche</option>
+      <option value="buche">Buche</option>
+      <option value="esche">Esche</option>
+    </select>
+    <div class="species-hint" id="speciesHint"></div>
+  </div>
+
+  <button type="submit" class="btn-add" id="submitBtn">
+    <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>
+    <span id="submitLabel">Hinzufügen</span>
+  </button>
+  <button type="button" class="btn-cancel" id="cancelBtn">Bearbeiten abbrechen</button>
+</form>
+
+<!-- Liste -->
+<div class="list-head">
+  <h2>Balken / Stämme</h2>
+  <button class="clear-btn" id="clearBtn" style="display:none;">Alle löschen</button>
+</div>
+<div id="list"></div>
+
+<!-- Brennholz: Raummeter -->
+<div class="card pad mb" id="rmCard" style="margin-top:14px;">
+  <p class="card-title">
+    <svg viewBox="0 0 24 24"><path d="M12 2c1 3-1 4.5-2.3 6.3C8.2 10.3 7 12 7 14.5a5 5 0 0010 0c0-2-.8-3.4-1.8-4.6.2 1.3-.4 2.2-1.3 2.2-1 0-1.5-.9-1.4-2.1.2-2.3-1.3-4.6-.5-8z"/></svg>
+    Brennholz-Umrechnung
+  </p>
+  <div style="display:flex; gap:10px; margin-bottom:12px;">
+    <div style="flex:1; background:var(--bg); border-radius:10px; padding:10px 12px;">
+      <div style="font-size:12px; color:var(--muted);">Raummeter / Ster</div>
+      <div style="font-size:20px; font-weight:600;" id="rmVal">0,00 Rm</div>
+    </div>
+    <div style="flex:1; background:var(--bg); border-radius:10px; padding:10px 12px;">
+      <div style="font-size:12px; color:var(--muted);">Schüttraummeter</div>
+      <div style="font-size:20px; font-weight:600;" id="srmVal">0,00 Srm</div>
+    </div>
+  </div>
+  <label for="rmPreset">Holzart (Umrechnung)</label>
+  <select id="rmPreset">
+    <option value="allgemein">Allgemein · Faustwert (1,4 · 2,3)</option>
+    <option value="buche">Buche · Hartholz (1,61 · 2,38)</option>
+    <option value="fichte">Fichte · Weichholz (1,55 · 2,52)</option>
+    <option value="eigene">Eigene Faktoren</option>
+  </select>
+  <div class="row" style="margin-top:11px;">
+    <div class="field">
+      <label for="rmFactor">Faktor Fm→Rm</label>
+      <input type="text" id="rmFactor" inputmode="decimal" value="1,4">
+    </div>
+    <div class="field">
+      <label for="srmFactor">Faktor Fm→Srm</label>
+      <input type="text" id="srmFactor" inputmode="decimal" value="2,3">
+    </div>
+  </div>
+  <div class="toggle-row">
+    <span class="t-label">
+      <svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm8 1.5V8h4.5z"/></svg>
+      Auch im PDF ausweisen
+    </span>
+    <label class="switch">
+      <input type="checkbox" id="rmPdfToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+  <p style="font-size:11px; color:var(--muted); margin:9px 0 0; line-height:1.45;">
+    Richtwerte für gespaltenes Scheitholz (Fm→Rm ca. 1,4–1,7 · Fm→Srm ca. 2,0–2,5, je nach Holzart und Spaltung; TFZ Bayern). Faktoren anpassbar.
+  </p>
+</div>
+
+<!-- Preis & MwSt -->
+<div class="card pad mb" style="margin-top:14px;">
+  <p class="card-title">
+    <svg viewBox="0 0 24 24"><path d="M12 1a11 11 0 100 22 11 11 0 000-22zm1 16.9V19h-2v-1.05c-1.7-.35-3-1.5-3-3.2h2c0 .9.9 1.5 2 1.5s2-.5 2-1.3c0-.7-.6-1-2.2-1.4C10.2 13.2 8.5 12.6 8.5 10.6c0-1.55 1.2-2.6 2.5-2.9V6.5h2v1.15c1.5.35 2.6 1.45 2.6 3h-2c0-.8-.7-1.35-1.6-1.35-1 0-1.5.5-1.5 1.15 0 .65.7.95 2.2 1.35 1.9.5 3.3 1.2 3.3 3.1 0 1.7-1.3 2.7-2.7 3z"/></svg>
+    Preis &amp; MwSt <span style="font-weight:400; color:var(--muted); font-size:12px;">(optional)</span>
+  </p>
+  <div class="row">
+    <div class="field">
+      <label for="price">Preis pro Fm (€)</label>
+      <input type="text" id="price" inputmode="decimal" placeholder="50,00">
+    </div>
+    <div class="field" id="rateField" style="opacity:.4; pointer-events:none;">
+      <label for="vatRate">MwSt-Satz</label>
+      <select id="vatRate">
+        <option value="19">19 % · Regelsatz</option>
+        <option value="7">7 % · ermäßigt</option>
+        <option value="5.5">5,5 % · Forst (§24)</option>
+        <option value="custom">Anderer …</option>
+      </select>
+    </div>
+  </div>
+  <div class="reveal" id="customRateRow">
+    <label for="vatCustom">Eigener MwSt-Satz (%)</label>
+    <input type="text" id="vatCustom" inputmode="decimal" placeholder="10,7">
+  </div>
+  <div class="toggle-row">
+    <span class="t-label">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h12v2H3z"/></svg>
+      MwSt berechnen
+    </span>
+    <label class="switch">
+      <input type="checkbox" id="vatToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="breakdown" id="breakdown">
+    <div class="b-row"><span>Netto</span><span id="bNetto">–</span></div>
+    <div class="b-row" id="bMwstRow"><span id="bMwstLbl">zzgl. MwSt</span><span id="bMwst">–</span></div>
+    <div class="b-row total"><span>Brutto</span><span id="bBrutto">–</span></div>
+  </div>
+</div>
+
+<!-- Rechnung (optional) -->
+<div class="card pad mb" style="margin-top:14px;">
+  <p class="card-title">
+    <svg viewBox="0 0 24 24"><path d="M6 2a2 2 0 00-2 2v18l2.5-1.5L9 22l2.5-1.5L14 22l2.5-1.5L20 22V4a2 2 0 00-2-2zm2 5h8v2H8zm0 4h8v2H8z"/></svg>
+    Rechnung <span style="font-weight:400; color:var(--muted); font-size:12px;">(optional, erscheint im PDF)</span>
+  </p>
+  <label for="issuer">Rechnungssteller (Sie)</label>
+  <textarea id="issuer" rows="3" placeholder="Ihr Betrieb / Name&#10;Straße Nr.&#10;PLZ Ort"></textarea>
+  <label for="recipient" style="margin-top:11px;">Rechnungsempfänger (Kunde)</label>
+  <textarea id="recipient" rows="3" placeholder="Name&#10;Straße&#10;PLZ Ort"></textarea>
+  <label for="invNo" style="margin-top:11px;">Rechnungsnummer</label>
+  <input type="text" id="invNo" placeholder="z. B. 2026-001">
+  <label for="payment" style="margin-top:11px;">Zahlungshinweis / IBAN</label>
+  <textarea id="payment" rows="2" placeholder="Zahlbar innerhalb 14 Tagen ohne Abzug.&#10;IBAN: DE00 0000 0000 0000 0000 00"></textarea>
+</div>
+
+<button type="button" class="btn-pdf" id="pdfBtn">
+  <svg viewBox="0 0 24 24"><path d="M19 2H8a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2V4a2 2 0 00-2-2zM8 4h11v12H8zm-4 4H2v12a2 2 0 002 2h12v-2H4z"/></svg>
+  Als PDF herunterladen
+</button>
+
+<p class="footnote">
+  Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
+  Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.
+</p>
+
+<!-- Kamera-Messung -->
+<div class="cam-overlay" id="camOverlay">
+  <div class="cam-head">
+    <h3>Ø per Foto messen</h3>
+    <button class="cam-close" id="camClose" aria-label="Schließen">&times;</button>
+  </div>
+  <div class="cam-stage" id="camStage">
+    <div class="cam-empty" id="camEmpty">
+      <p style="opacity:.85; font-size:14px; line-height:1.65; margin:0 0 20px;">
+        Fotografiere das <b>Stamm-Ende</b> möglichst gerade von vorne und lege einen
+        <b>Zollstock oder ein Maßband</b> als Referenz in dieselbe Ebene.
+      </p>
+      <button class="cam-shoot" id="camShoot">
+        <svg viewBox="0 0 24 24"><path d="M9 3 7.5 5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2h-3.5L15 3zm3 5a5 5 0 110 10 5 5 0 010-10zm0 2.2A2.8 2.8 0 1012 15.8 2.8 2.8 0 0012 10.2z"/></svg>
+        Foto aufnehmen
+      </button>
+    </div>
+    <canvas id="camCanvas" style="display:none;"></canvas>
+  </div>
+  <div class="cam-ctrl" id="camCtrl" style="display:none;">
+    <div class="cam-legend"><span class="dot g"></span>Referenz (bekannte Länge)<span class="dot o"></span>Durchmesser</div>
+    <div class="cam-refrow">
+      <label for="camRef">Referenz =</label>
+      <input type="text" id="camRef" inputmode="decimal" value="20">
+      <span>cm</span>
+    </div>
+    <div class="cam-readout" id="camReadout">Referenz-Länge eingeben und die Punkte an die Enden ziehen.</div>
+    <div class="cam-buttons">
+      <button class="cam-btn ghost" id="camRetake">Neues Foto</button>
+      <button class="cam-btn primary" id="camApply">Übernehmen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Druckvorlage (nur beim Drucken sichtbar) -->
+<div id="printArea"></div>
+
+<script>
+"use strict";
+
+/* Rindenabzug in cm vom Mitten-Ø MIT Rinde, gestaffelt nach Durchmesser.
+   Quelle: RVR (Rahmenvereinbarung für den Rohholzhandel in Deutschland), Anlage VII
+   „Rindenabzugswerte"; verifiziert gegen RVR-Originaldokument (5. Aufl. 2023) + forst-rast.de
+   (deckungsgleich für alle 8 Arten). Fichte/Tanne/Douglasie/Buche/Esche = wissenschaftlich
+   hergeleitet; Kiefer und Eiche/Lärche = RVR-Orientierungswert (regional abweichend).
+   [Obergrenze cm, Abzug cm] – erster passender Schwellwert gilt. */
+const RINDENABZUG = {
+  fichte:    { name:"Fichte",    steps:[[26,1],[50,2],[Infinity,3]] },
+  tanne:     { name:"Tanne",     steps:[[22,1],[38,2],[55,3],[Infinity,4]] },
+  kiefer:    { name:"Kiefer",    steps:[[20,1],[36,2],[62,3],[Infinity,4]] },
+  laerche:   { name:"Lärche",    steps:[[20,1],[31,2],[42,3],[53,4],[Infinity,5]] },
+  douglasie: { name:"Douglasie", steps:[[20,1],[37,2],[53,3],[70,4],[Infinity,5]] },
+  eiche:     { name:"Eiche",     steps:[[20,1],[31,2],[42,3],[53,4],[Infinity,5]] },
+  buche:     { name:"Buche",     steps:[[41,1],[Infinity,2]] },
+  esche:     { name:"Esche",     steps:[[18,1],[29,2],[44,3],[Infinity,4]] },
+};
+
+/* Arten, für die der RVR nur einen Orientierungswert nennt (nicht wiss. hergeleitet, regional abweichend). */
+const ORIENTIERUNG = new Set(["kiefer","eiche","laerche"]);
+
+const K_ITEMS = "koessler.items.v1";
+const K_PREFS = "koessler.prefs.v1";
+
+/* Einmalige Übernahme evtl. vorhandener Daten der Vorgänger-Version (Balken UND Einstellungen) */
+try{
+  if(!localStorage.getItem(K_ITEMS) && localStorage.getItem("holzrechner.items.v1"))
+    localStorage.setItem(K_ITEMS, localStorage.getItem("holzrechner.items.v1"));
+  if(!localStorage.getItem(K_PREFS) && localStorage.getItem("holzrechner.prefs.v1"))
+    localStorage.setItem(K_PREFS, localStorage.getItem("holzrechner.prefs.v1"));
+}catch(e){}
+
+let items = load();
+let editId = null;
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  length:$("length"), diameter:$("diameter"), qty:$("qty"),
+  barkToggle:$("barkToggle"), speciesRow:$("speciesRow"), species:$("species"), speciesHint:$("speciesHint"),
+  form:$("form"), submitLabel:$("submitLabel"), cancelBtn:$("cancelBtn"),
+  list:$("list"), count:$("count"), totalVal:$("totalVal"), totalSub:$("totalSub"),
+  totalEuro:$("totalEuro"), clearBtn:$("clearBtn"),
+  price:$("price"), vatToggle:$("vatToggle"), vatRate:$("vatRate"), rateField:$("rateField"),
+  vatCustom:$("vatCustom"), customRateRow:$("customRateRow"),
+  breakdown:$("breakdown"), bNetto:$("bNetto"), bMwst:$("bMwst"), bMwstLbl:$("bMwstLbl"),
+  bMwstRow:$("bMwstRow"), bBrutto:$("bBrutto"), pdfBtn:$("pdfBtn"), printArea:$("printArea"),
+  issuer:$("issuer"), recipient:$("recipient"),
+  appTitle:$("appTitle"), renameBtn:$("renameBtn"), manifest:$("manifest"),
+  rmFactor:$("rmFactor"), srmFactor:$("srmFactor"), rmVal:$("rmVal"), srmVal:$("srmVal"), rmPdfToggle:$("rmPdfToggle"),
+  invNo:$("invNo"), payment:$("payment"), rmPreset:$("rmPreset"),
+};
+
+/* Holzart-Presets für die Brennholz-Umrechnung (TFZ Bayern, gespaltene 33-cm-Scheite). */
+const RM_PRESETS = { allgemein:[1.4,2.3], buche:[1.61,2.38], fichte:[1.55,2.52] };
+
+const DEFAULT_APP_NAME = "Kößler Holzberechnung";
+let appName = DEFAULT_APP_NAME;
+
+/* --- Helfer --- */
+/* de-DE-tolerant: Komma = Dezimaltrenner, Punkt = Tausendertrenner ("1.250,50"→1250.5, "1.200"→1200),
+   einzelner Punkt bleibt Dezimaltrenner ("10.50"→10.5). */
+const num = (v) => {
+  let s = String(v).trim().replace(/[^0-9.,\-]/g, "");
+  if(s.indexOf(",") > -1) s = s.replace(/\./g, "").replace(",", ".");
+  else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  return parseFloat(s);
+};
+const round3 = (v) => Math.round((isFinite(v)?v:0)*1000)/1000;
+const round2 = (v) => Math.round((isFinite(v)?v:0)*100)/100;
+const fmt = (v,d=3) => (isFinite(v)?v:0).toLocaleString("de-DE",{minimumFractionDigits:d, maximumFractionDigits:d});
+const euro = (v) => (isFinite(v)?v:0).toLocaleString("de-DE",{style:"currency", currency:"EUR"});
+const escapeHtml = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nl2br = (s) => escapeHtml(s.trim()).replace(/\n/g,"<br>");
+
+function barkDeduction(speciesKey, dCm){
+  const t = RINDENABZUG[speciesKey];
+  if(!t) return 0;
+  for(const [max, cm] of t.steps){ if(dCm <= max) return cm; }
+  return 0;
+}
+function volumeEach(it){
+  let d = it.diameter;
+  if(it.bark){ d -= barkDeduction(it.species, it.diameter); if(d < 0) d = 0; }
+  const r = d / 200;
+  return Math.PI * r * r * it.length;
+}
+function volumeTotal(it){ return volumeEach(it) * it.qty; }
+
+function currentVatRate(){
+  if(!els.vatToggle.checked) return 0;
+  if(els.vatRate.value === "custom") return num(els.vatCustom.value) || 0;
+  return parseFloat(els.vatRate.value) || 0;
+}
+function computeTotals(){
+  /* Jeden Stamm auf 3 Nachkommastellen runden und dann summieren –
+     so ergibt die gedruckte Tabelle nachrechenbar die Summe und den €-Betrag. */
+  const totalFm = round3(items.reduce((s,it)=>s+round3(volumeTotal(it)), 0));
+  const price = num(els.price.value) || 0;
+  const rate = currentVatRate();
+  /* Auf ganze Cent runden, damit Netto + MwSt = Brutto auf der Rechnung immer aufgeht. */
+  const netto = round2(totalFm * price);
+  const mwst = round2(totalFm * price * rate/100);
+  return { totalFm, price, rate, netto, mwst, brutto: netto+mwst, stems: items.reduce((s,it)=>s+it.qty,0) };
+}
+
+/* --- Speicher --- */
+function load(){ try{ return JSON.parse(localStorage.getItem(K_ITEMS)) || []; }catch(e){ return []; } }
+function save(){ try{ localStorage.setItem(K_ITEMS, JSON.stringify(items)); }catch(e){} }
+function loadPrefs(){
+  try{
+    const p = JSON.parse(localStorage.getItem(K_PREFS)) || {};
+    els.barkToggle.checked = !!p.bark;
+    if(p.species) els.species.value = p.species;
+    if(p.price != null) els.price.value = p.price;
+    els.vatToggle.checked = !!p.vat;
+    if(p.vatRate) els.vatRate.value = p.vatRate;
+    if(p.vatCustom != null) els.vatCustom.value = p.vatCustom;
+    if(p.issuer != null) els.issuer.value = p.issuer;
+    if(p.recipient != null) els.recipient.value = p.recipient;
+    if(p.rmFactor != null) els.rmFactor.value = p.rmFactor;
+    if(p.srmFactor != null) els.srmFactor.value = p.srmFactor;
+    els.rmPdfToggle.checked = !!p.rmPdf;
+    if(p.rmPreset) els.rmPreset.value = p.rmPreset;
+    if(p.invNo != null) els.invNo.value = p.invNo;
+    if(p.payment != null) els.payment.value = p.payment;
+    if(p.appName) appName = p.appName;
+  }catch(e){}
+  syncReveals();
+  applyAppName(appName);
+}
+function savePrefs(){
+  try{ localStorage.setItem(K_PREFS, JSON.stringify({
+    bark:els.barkToggle.checked, species:els.species.value,
+    price:els.price.value, vat:els.vatToggle.checked,
+    vatRate:els.vatRate.value, vatCustom:els.vatCustom.value,
+    issuer:els.issuer.value, recipient:els.recipient.value,
+    rmFactor:els.rmFactor.value, srmFactor:els.srmFactor.value, rmPdf:els.rmPdfToggle.checked,
+    rmPreset:els.rmPreset.value, invNo:els.invNo.value, payment:els.payment.value,
+    appName,
+  })); }catch(e){}
+}
+
+/* App-Name (oben editierbar) auf UI, Tab-Titel, iOS-Kachel und Android-Manifest anwenden. */
+function appIconDataUri(){
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'>"
+    + "<rect width='512' height='512' rx='104' fill='#b5651d'/>"
+    + "<g transform='translate(112,112) scale(12)' fill='#ffffff'>"
+    + "<path d='M12 2 6 9h3l-4 5h3l-4 5h16l-4-5h3l-4-5h3z'/><rect x='11' y='19' width='2' height='3'/></g></svg>";
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+/* App-Icon als echtes PNG (iOS-Kachel/Android-Manifest mögen PNG lieber als SVG). */
+function iconPng(size){
+  try{
+    const c = document.createElement("canvas"); c.width=size; c.height=size;
+    const x = c.getContext("2d");
+    x.fillStyle = "#b5651d";
+    if(x.roundRect){ x.beginPath(); x.roundRect(0,0,size,size,Math.round(size*0.2)); x.fill(); }
+    else x.fillRect(0,0,size,size);
+    const s = size/24*0.58, off=(size-24*s)/2;
+    x.save(); x.translate(off,off); x.scale(s,s);
+    x.fillStyle="#ffffff";
+    x.fill(new Path2D("M12 2 6 9h3l-4 5h3l-4 5h16l-4-5h3l-4-5h3z"));
+    x.fillRect(11,19,2,3);
+    x.restore();
+    return c.toDataURL("image/png");
+  }catch(e){ return appIconDataUri(); }
+}
+let ICONS = null;
+function getIcons(){
+  if(!ICONS) ICONS = { i180:iconPng(180), i192:iconPng(192), i512:iconPng(512) };
+  return ICONS;
+}
+let manifestUrl = null;
+function buildManifest(name){
+  try{
+    const ic = getIcons();
+    const m = {
+      name: name, short_name: name.slice(0,24),
+      start_url: location.href, display: "standalone", orientation: "portrait",
+      background_color: "#1a1917", theme_color: "#0f6e56",
+      icons: [
+        { src: ic.i192, sizes: "192x192", type: "image/png", purpose: "any" },
+        { src: ic.i512, sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      ],
+    };
+    const blob = new Blob([JSON.stringify(m)], { type: "application/manifest+json" });
+    if(manifestUrl) URL.revokeObjectURL(manifestUrl);
+    manifestUrl = URL.createObjectURL(blob);
+    els.manifest.setAttribute("href", manifestUrl);
+  }catch(e){}
+}
+function applyAppName(name){
+  appName = (name && name.trim()) ? name.trim() : DEFAULT_APP_NAME;
+  els.appTitle.textContent = appName;
+  document.title = appName;
+  const am = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  if(am) am.setAttribute("content", appName.slice(0,30));
+  buildManifest(appName);
+}
+function renameApp(){
+  const n = prompt("Name der App (oben angezeigt und im PDF):", appName);
+  if(n === null) return;              // Abbruch
+  applyAppName(n);
+  savePrefs();
+}
+
+/* --- UI-Sync --- */
+function syncReveals(){
+  els.speciesRow.classList.toggle("open", els.barkToggle.checked);
+  const vat = els.vatToggle.checked;
+  els.rateField.style.opacity = vat ? "1" : ".4";
+  els.rateField.style.pointerEvents = vat ? "auto" : "none";
+  els.customRateRow.classList.toggle("open", vat && els.vatRate.value === "custom");
+  updateSpeciesHint();
+}
+function updateSpeciesHint(){
+  const show = els.barkToggle.checked && ORIENTIERUNG.has(els.species.value);
+  els.speciesHint.classList.toggle("show", show);
+  if(show){
+    const nm = RINDENABZUG[els.species.value]?.name || "";
+    els.speciesHint.textContent = `Hinweis: ${nm} ist ein RVR-Orientierungswert (nicht wissenschaftlich hergeleitet, regional abweichend).`;
+  }
+}
+
+function render(){
+  els.list.innerHTML = "";
+
+  if(items.length === 0){
+    els.list.innerHTML = `<div class="card empty">
+      <svg viewBox="0 0 24 24"><path d="M12 2 6 9h3l-4 5h3l-4 5h16l-4-5h3l-4-5h3z"/></svg>
+      Noch keine Balken.<br>Länge und Durchmesser eingeben und „Hinzufügen" tippen.</div>`;
+    els.clearBtn.style.display = "none";
+  }else{
+    els.clearBtn.style.display = "block";
+    for(const it of items){
+      const each = volumeEach(it);
+      const tot = round3(volumeTotal(it));
+      let meta;
+      if(it.bark){
+        const ded = barkDeduction(it.species, it.diameter);
+        const eff = Math.max(0, it.diameter - ded);
+        meta = `${fmt(it.length,2)} m · ${RINDENABZUG[it.species]?.name||""} · Ø ${fmt(it.diameter,1)}→${fmt(eff,1)} cm · −${fmt(ded,0)} cm Rinde`;
+      }else{
+        meta = `${fmt(it.length,2)} m · Ø ${fmt(it.diameter,1)} cm · mit Rinde`;
+      }
+      const mult = it.qty > 1 ? `<span class="mult">(${it.qty} × ≈ ${fmt(each)} Fm)</span>` : "";
+      const shown = fmt(tot);
+      const el = document.createElement("div");
+      el.className = "card item" + (it.id === editId ? " active" : "");
+      el.innerHTML = `
+        <div class="info">
+          <div class="fm">${shown} Fm ${mult}</div>
+          <div class="meta">${meta}</div>
+        </div>
+        <button class="icon-btn edit" aria-label="Bearbeiten">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>
+        </button>
+        <button class="icon-btn del" aria-label="Löschen">
+          <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7zM9 4h6l1 2h4v2H4V6h4z"/></svg>
+        </button>`;
+      el.querySelector(".edit").onclick = () => startEdit(it.id);
+      el.querySelector(".del").onclick  = () => removeItem(it.id);
+      els.list.appendChild(el);
+    }
+  }
+
+  const t = computeTotals();
+  els.totalVal.textContent = fmt(t.totalFm);
+  els.count.textContent = t.stems === 1 ? "1 Stamm" : t.stems + " Stämme";
+  els.totalSub.textContent = items.length ? "Summe aller Balken" : "Länge × Mittendurchmesser eingeben";
+
+  /* € in Gesamt-Karte + Aufschlüsselung */
+  if(t.price > 0 && items.length){
+    const showVat = els.vatToggle.checked && t.rate > 0;
+    els.totalEuro.style.display = "block";
+    els.totalEuro.innerHTML = "= " + euro(showVat ? t.brutto : t.netto) +
+      (showVat ? ` <span>brutto · inkl. ${fmt(t.rate,2).replace(/,00$/,'')} % MwSt</span>` : ` <span>netto</span>`);
+    els.breakdown.classList.add("show");
+    els.bNetto.textContent = euro(t.netto);
+    if(showVat){
+      els.bMwstRow.style.display = "flex";
+      els.bMwstLbl.textContent = `zzgl. ${fmt(t.rate,2).replace(/,00$/,'')} % MwSt`;
+      els.bMwst.textContent = euro(t.mwst);
+      els.bBrutto.textContent = euro(t.brutto);
+    }else{
+      els.bMwstRow.style.display = "none";
+      els.bBrutto.textContent = euro(t.netto);
+    }
+  }else{
+    els.totalEuro.style.display = "none";
+    els.breakdown.classList.remove("show");
+  }
+
+  /* Brennholz-Umrechnung (Raummeter/Ster + Schüttraummeter) */
+  els.rmVal.textContent = fmt(t.totalFm * (num(els.rmFactor.value) || 0), 2) + " Rm";
+  els.srmVal.textContent = fmt(t.totalFm * (num(els.srmFactor.value) || 0), 2) + " Srm";
+}
+
+/* --- Aktionen --- */
+els.form.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const length = num(els.length.value);
+  const diameter = num(els.diameter.value);
+  let qty = parseInt(els.qty.value, 10);
+  if(!qty || qty < 1) qty = 1;
+  if(!(length > 0)){ els.length.focus(); return; }
+  if(!(diameter > 0)){ els.diameter.focus(); return; }
+
+  const data = { length, diameter, qty, bark: els.barkToggle.checked, species: els.species.value };
+  if(editId){
+    const it = items.find(x=>x.id===editId);
+    if(it) Object.assign(it, data);
+    stopEdit();
+  }else{
+    data.id = "id" + (items.reduce((m,x)=>Math.max(m, +String(x.id).replace("id","")||0),0)+1);
+    items.push(data);
+  }
+  save(); savePrefs(); render(); resetForm();
+});
+
+function resetForm(){ els.length.value=""; els.diameter.value=""; els.qty.value="1"; els.length.focus(); }
+
+function startEdit(id){
+  const it = items.find(x=>x.id===id);
+  if(!it) return;
+  editId = id;
+  els.length.value = String(it.length).replace(".", ",");
+  els.diameter.value = String(it.diameter).replace(".", ",");
+  els.qty.value = it.qty;
+  els.barkToggle.checked = it.bark;
+  els.species.value = it.species;
+  syncReveals();
+  document.body.classList.add("editing");
+  els.submitLabel.textContent = "Aktualisieren";
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+  els.length.focus();
+}
+function stopEdit(){ editId=null; document.body.classList.remove("editing"); els.submitLabel.textContent="Hinzufügen"; }
+els.cancelBtn.onclick = ()=>{ stopEdit(); resetForm(); render(); };
+
+function removeItem(id){
+  if(id === editId){ stopEdit(); resetForm(); }
+  items = items.filter(x=>x.id!==id);
+  save(); render();
+}
+els.clearBtn.onclick = ()=>{
+  if(confirm("Wirklich alle Balken löschen?")){ items=[]; stopEdit(); save(); render(); }
+};
+
+els.barkToggle.addEventListener("change", ()=>{ syncReveals(); savePrefs(); render(); });
+els.species.addEventListener("change", ()=>{ savePrefs(); updateSpeciesHint(); render(); });
+els.price.addEventListener("input", ()=>{ savePrefs(); render(); });
+els.vatToggle.addEventListener("change", ()=>{ syncReveals(); savePrefs(); render(); });
+els.vatRate.addEventListener("change", ()=>{ syncReveals(); savePrefs(); render(); });
+els.vatCustom.addEventListener("input", ()=>{ savePrefs(); render(); });
+els.issuer.addEventListener("input", savePrefs);
+els.recipient.addEventListener("input", savePrefs);
+els.renameBtn.addEventListener("click", renameApp);
+els.appTitle.addEventListener("click", renameApp);
+function applyRmPreset(){
+  const p = RM_PRESETS[els.rmPreset.value];
+  if(p){
+    els.rmFactor.value = String(p[0]).replace(".", ",");
+    els.srmFactor.value = String(p[1]).replace(".", ",");
+  }
+}
+els.rmPreset.addEventListener("change", ()=>{ applyRmPreset(); savePrefs(); render(); });
+els.rmFactor.addEventListener("input", ()=>{ els.rmPreset.value = "eigene"; savePrefs(); render(); });
+els.srmFactor.addEventListener("input", ()=>{ els.rmPreset.value = "eigene"; savePrefs(); render(); });
+els.rmPdfToggle.addEventListener("change", savePrefs);
+els.invNo.addEventListener("input", savePrefs);
+els.payment.addEventListener("input", savePrefs);
+
+/* --- PDF / Drucken --- */
+els.pdfBtn.addEventListener("click", ()=>{
+  if(items.length === 0){ alert("Noch keine Balken zum Ausdrucken."); return; }
+  const t = computeTotals();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+  const timeStr = now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+
+  let rows = "";
+  items.forEach((it,i)=>{
+    const art = it.bark ? (RINDENABZUG[it.species]?.name || "") : "mit Rinde";
+    const ded = it.bark ? barkDeduction(it.species, it.diameter) : 0;
+    const eff = it.bark ? Math.max(0, it.diameter - ded) : it.diameter;
+    const dedTxt = it.bark ? "−" + fmt(ded,0) + " cm" : "–";
+    rows += `<tr><td>${i+1}</td><td class="r">${fmt(it.length,2)}</td><td>${art}</td>`
+          + `<td class="r">${fmt(it.diameter,1)}</td><td class="r">${dedTxt}</td><td class="r">${fmt(eff,1)}</td>`
+          + `<td class="r">${it.qty}</td><td class="r">${fmt(volumeTotal(it))}</td></tr>`;
+  });
+
+  let money = "";
+  if(t.price > 0){
+    const showVat = els.vatToggle.checked && t.rate > 0;
+    money = `<div class="pt-row"><span>Preis pro Fm</span><span>${euro(t.price)}</span></div>`
+          + `<div class="pt-row"><span>Netto</span><span>${euro(t.netto)}</span></div>`;
+    if(showVat){
+      money += `<div class="pt-row"><span>zzgl. ${fmt(t.rate,2).replace(/,00$/,'')} % MwSt</span><span>${euro(t.mwst)}</span></div>`
+             + `<div class="pt-row grand"><span>Brutto</span><span>${euro(t.brutto)}</span></div>`;
+    }else{
+      money += `<div class="pt-row grand"><span>Summe</span><span>${euro(t.netto)}</span></div>`;
+    }
+  }
+
+  const hasOrient = items.some(it => it.bark && ORIENTIERUNG.has(it.species));
+  const rmF = num(els.rmFactor.value) || 0, srmF = num(els.srmFactor.value) || 0;
+  const showRm = els.rmPdfToggle.checked;
+  const rmRows = showRm
+    ? `<div class="pt-row"><span>Raummeter (Ster)</span><span>${fmt(t.totalFm*rmF,2)} Rm</span></div>`
+      + `<div class="pt-row"><span>Schüttraummeter</span><span>${fmt(t.totalFm*srmF,2)} Srm</span></div>`
+    : "";
+  const issuer = els.issuer.value.trim();
+  const recipient = els.recipient.value.trim();
+  const invNo = els.invNo.value.trim();
+  const payment = els.payment.value.trim();
+  const nrTxt = invNo ? "Rechnung Nr. " + escapeHtml(invNo) : "";
+  let headHtml = `<div class="p-brand">${escapeHtml(appName)}</div><hr class="p-rule">`;
+  if(issuer || recipient){
+    headHtml += `<div class="p-parties">`
+      + `<div class="p-party">` + (recipient ? `<div class="p-plabel">Rechnungsempfänger</div>${nl2br(recipient)}` : "") + `</div>`
+      + `<div class="p-party right">` + (issuer ? `<div class="p-plabel">Rechnungssteller</div>${nl2br(issuer)}` : "")
+        + `<div class="p-pdate">${dateStr} · ${timeStr} Uhr</div></div>`
+      + `</div>`
+      + `<div class="p-headline"><span class="p-sub">Festmeter-Aufstellung</span>${nrTxt ? `<span class="p-date">${nrTxt}</span>` : ""}</div>`;
+  }else{
+    headHtml += `<div class="p-headline"><span class="p-sub">Festmeter-Aufstellung</span><span class="p-date">${nrTxt ? nrTxt + " · " : ""}${dateStr} · ${timeStr} Uhr</span></div>`;
+  }
+
+  els.printArea.innerHTML = headHtml + `
+    <table>
+      <thead><tr><th>Nr</th><th class="r">Länge&nbsp;(m)</th><th>Baumart</th><th class="r">Ø&nbsp;gem.</th><th class="r">Rinde</th><th class="r">Ø&nbsp;ger.</th><th class="r">Anz.</th><th class="r">Fm</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="p-tot">
+      <div class="pt-row"><span>Stämme gesamt</span><span>${t.stems}</span></div>
+      <div class="pt-row ${t.price>0?'':'grand'}"><span>Festmeter gesamt</span><span>${fmt(t.totalFm)} Fm</span></div>
+      ${rmRows}
+      ${money}
+    </div>
+    ${payment ? `<div class="p-pay"><span class="p-plabel">Zahlung</span>${nl2br(payment)}</div>` : ""}
+    <div class="p-foot">Ø gem. = gemessener Mitten-Ø (mit Rinde) · Rinde = abgezogene Rindenstärke · Ø ger. = für die Berechnung verwendeter Ø · Fm = Festmeter (m³).<br>Berechnung nach Huber-Formel V = π·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII).${hasOrient ? " Kiefer/Eiche/Lärche = RVR-Orientierungswert (regional abweichend)." : ""}${showRm ? ` Umrechnung Brennholz: 1 Fm = ${fmt(rmF,2)} Rm = ${fmt(srmF,2)} Srm (Richtwert gespaltenes Scheitholz).` : ""}<br>erstellt mit ${escapeHtml(appName)}</div>`;
+
+  const prevTitle = document.title;
+  const isoLocal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+  document.title = appName + " " + isoLocal;
+  const restore = ()=>{ document.title = prevTitle; window.removeEventListener("afterprint", restore); };
+  window.addEventListener("afterprint", restore);
+  window.print();
+  setTimeout(restore, 3000);
+});
+
+/* --- Kamera: Durchmesser per Foto messen ---
+   Foto vom Stamm-Ende + Referenz (bekannte Länge) im Bild. Nutzer zieht je 2 Punkte
+   für Referenz (grün) und Durchmesser (orange). Ø[cm] = diaPx · refCm / refPx. */
+const cam = {
+  overlay:$("camOverlay"), stage:$("camStage"), canvas:$("camCanvas"),
+  empty:$("camEmpty"), ctrl:$("camCtrl"), ref:$("camRef"), readout:$("camReadout"), input:$("camInput"),
+};
+cam.ctx = cam.canvas.getContext("2d");
+let camImg = null, camPts = null, camDrag = null;
+const cdist = (a,b)=>Math.hypot(a.x-b.x, a.y-b.y);
+
+function openCam(){
+  cam.overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+  if(camImg){ showCanvas(); fitCanvas(); drawCam(); } else { showEmpty(); }
+}
+function closeCam(){ cam.overlay.classList.remove("open"); document.body.style.overflow = ""; }
+function showEmpty(){ cam.empty.style.display="block"; cam.canvas.style.display="none"; cam.ctrl.style.display="none"; }
+function showCanvas(){ cam.empty.style.display="none"; cam.canvas.style.display="block"; cam.ctrl.style.display="block"; }
+
+function fitCanvas(){
+  if(!camImg) return;
+  const availW = cam.stage.clientWidth - 16, availH = cam.stage.clientHeight - 16;
+  const ratio = Math.min(availW/camImg.naturalWidth, availH/camImg.naturalHeight, 1) || 1;
+  const cw = Math.max(60, Math.round(camImg.naturalWidth*ratio));
+  const ch = Math.max(60, Math.round(camImg.naturalHeight*ratio));
+  cam.canvas.width = cw; cam.canvas.height = ch;
+  cam.canvas.style.width = cw+"px"; cam.canvas.style.height = ch+"px";
+}
+function initHandles(){
+  const w=cam.canvas.width, h=cam.canvas.height;
+  camPts = {
+    ref:[{x:w*0.22,y:h*0.82},{x:w*0.52,y:h*0.82}],
+    dia:[{x:w*0.34,y:h*0.42},{x:w*0.66,y:h*0.42}],
+  };
+}
+function loadPhoto(file){
+  const r = new FileReader();
+  r.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{ camImg=img; showCanvas(); fitCanvas(); initHandles(); drawCam(); };
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+function drawLineCam(pts,color){
+  const c=cam.ctx;
+  c.lineWidth=2; c.strokeStyle=color;
+  c.beginPath(); c.moveTo(pts[0].x,pts[0].y); c.lineTo(pts[1].x,pts[1].y); c.stroke();
+  for(const p of pts){
+    c.beginPath(); c.arc(p.x,p.y,9,0,Math.PI*2); c.fillStyle=color; c.fill();
+    c.lineWidth=2.5; c.strokeStyle="#fff"; c.stroke();
+  }
+}
+function drawCam(){
+  const c=cam.ctx, cv=cam.canvas;
+  c.clearRect(0,0,cv.width,cv.height);
+  if(camImg) c.drawImage(camImg,0,0,cv.width,cv.height);
+  if(camPts){ drawLineCam(camPts.ref,"#39d98a"); drawLineCam(camPts.dia,"#ffa53a"); }
+  updateCamReadout();
+}
+function computeCamDia(){
+  if(!camPts) return null;
+  const refCm=num(cam.ref.value);
+  const refPx=cdist(camPts.ref[0],camPts.ref[1]);
+  const diaPx=cdist(camPts.dia[0],camPts.dia[1]);
+  if(!(refCm>0) || refPx<1) return null;
+  return diaPx*refCm/refPx;
+}
+function updateCamReadout(){
+  const d=computeCamDia();
+  cam.readout.innerHTML = d==null
+    ? "Referenz-Länge eingeben und die Punkte an die Enden ziehen."
+    : `Durchmesser ≈ <b>${fmt(d,1)} cm</b>`;
+}
+function camCanvasPt(e){
+  const r=cam.canvas.getBoundingClientRect();
+  return { x:(e.clientX-r.left)*(cam.canvas.width/r.width), y:(e.clientY-r.top)*(cam.canvas.height/r.height) };
+}
+cam.canvas.addEventListener("pointerdown", (e)=>{
+  if(!camPts) return;
+  e.preventDefault();
+  const p=camCanvasPt(e); let best=null, bd=32;
+  for(const ln of ["ref","dia"]) for(let i=0;i<2;i++){ const d=cdist(p,camPts[ln][i]); if(d<bd){bd=d; best={ln,i};} }
+  if(best){ camDrag=best; try{ cam.canvas.setPointerCapture(e.pointerId); }catch(_){} }
+});
+cam.canvas.addEventListener("pointermove", (e)=>{
+  if(!camDrag) return;
+  e.preventDefault();
+  const p=camCanvasPt(e);
+  camPts[camDrag.ln][camDrag.i] = { x:Math.max(0,Math.min(cam.canvas.width,p.x)), y:Math.max(0,Math.min(cam.canvas.height,p.y)) };
+  drawCam();
+});
+const endCamDrag = ()=>{ camDrag=null; };
+cam.canvas.addEventListener("pointerup", endCamDrag);
+cam.canvas.addEventListener("pointercancel", endCamDrag);
+window.addEventListener("resize", ()=>{
+  if(!camImg || !cam.overlay.classList.contains("open")) return;
+  const oldW=cam.canvas.width, oldH=cam.canvas.height;
+  fitCanvas();
+  if(camPts && oldW && oldH){
+    const sx=cam.canvas.width/oldW, sy=cam.canvas.height/oldH;
+    for(const ln of ["ref","dia"]) for(const p of camPts[ln]){ p.x*=sx; p.y*=sy; }
+  }
+  drawCam();
+});
+
+$("measureBtn").onclick = openCam;
+$("camShoot").onclick = ()=> cam.input.click();
+$("camRetake").onclick = ()=> cam.input.click();
+$("camClose").onclick = closeCam;
+cam.ref.addEventListener("input", drawCam);
+cam.input.addEventListener("change", (e)=>{
+  const f = e.target.files && e.target.files[0];
+  if(f){ if(!cam.overlay.classList.contains("open")) openCam(); loadPhoto(f); }
+  e.target.value = "";
+});
+$("camApply").onclick = ()=>{
+  const d = computeCamDia();
+  if(d==null){ alert("Bitte Referenz-Länge eingeben und die beiden Linien setzen."); return; }
+  els.diameter.value = fmt(d,1);
+  closeCam();
+  els.diameter.focus();
+};
+
+/* --- Start --- */
+loadPrefs();
+render();
+
+/* Home-Screen: echtes PNG als iOS-Kachel setzen + Service Worker registrieren
+   (Service Worker geht nur, wenn die Seite per http(s) ausgeliefert wird – bei
+   lokaler Datei wird er still übersprungen, die App läuft trotzdem). */
+try{ const ati=document.querySelector('link[rel="apple-touch-icon"]'); if(ati) ati.setAttribute("href", getIcons().i180); }catch(e){}
+if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+}
+</script>
+</body>
+</html>
