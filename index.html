@@ -59,6 +59,14 @@
   .total .euro{font-size:16px; font-weight:600; margin-top:3px;}
   .total .euro span{font-size:12px; font-weight:400; opacity:.85;}
   .total .sub{font-size:12.5px; opacity:.85;}
+  .total .wt{font-size:16px; font-weight:600; margin-top:3px;}
+  .total .wt span{font-size:12px; font-weight:400; opacity:.85;}
+  .item .wt{font-size:12.5px; color:var(--green); font-weight:600; margin-top:2px;}
+  .wt-tiles{display:flex; gap:10px; margin:12px 0;}
+  .wt-tile{flex:1; min-width:0; background:var(--bg); border-radius:10px; padding:10px 12px;}
+  .wt-tile .k{font-size:12px; color:var(--muted);}
+  .wt-tile .v{font-size:20px; font-weight:600; overflow-wrap:anywhere;}
+  .wt-hint{font-size:11px; color:var(--muted); margin:10px 0 0; line-height:1.45;}
 
   /* Karten */
   .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);}
@@ -228,6 +236,7 @@
   <div class="lbl">Gesamt · <span id="count">0 Stämme</span></div>
   <div class="val"><span id="totalVal">0,000</span> <small>Fm</small></div>
   <div class="euro" id="totalEuro" style="display:none;"></div>
+  <div class="wt" id="totalWt" style="display:none;"></div>
   <div class="sub" id="totalSub">Länge × Mittendurchmesser eingeben</div>
 </div>
 
@@ -248,7 +257,19 @@
     </div>
   </div>
 
-  <button type="button" class="btn-measure" id="measureBtn">
+  <label for="species">Baumart</label>
+  <select id="species">
+    <option value="fichte">Fichte</option>
+    <option value="tanne">Tanne</option>
+    <option value="kiefer">Kiefer</option>
+    <option value="laerche">Lärche</option>
+    <option value="douglasie">Douglasie</option>
+    <option value="eiche">Eiche</option>
+    <option value="buche">Buche</option>
+    <option value="esche">Esche</option>
+  </select>
+
+  <button type="button" class="btn-measure" id="measureBtn" style="margin-top:11px;">
     <svg viewBox="0 0 24 24"><path d="M9 3 7.5 5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2h-3.5L15 3zm3 5a5 5 0 110 10 5 5 0 010-10zm0 2.2A2.8 2.8 0 1012 15.8 2.8 2.8 0 0012 10.2z"/></svg>
     Ø per Foto messen
   </button>
@@ -265,20 +286,7 @@
     </label>
   </div>
 
-  <div class="reveal" id="speciesRow">
-    <label for="species">Baumart (Rindenabzug)</label>
-    <select id="species">
-      <option value="fichte">Fichte</option>
-      <option value="tanne">Tanne</option>
-      <option value="kiefer">Kiefer</option>
-      <option value="laerche">Lärche</option>
-      <option value="douglasie">Douglasie</option>
-      <option value="eiche">Eiche</option>
-      <option value="buche">Buche</option>
-      <option value="esche">Esche</option>
-    </select>
-    <div class="species-hint" id="speciesHint"></div>
-  </div>
+  <div class="species-hint" id="speciesHint"></div>
 
   <button type="submit" class="btn-add" id="submitBtn">
     <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>
@@ -340,6 +348,42 @@
   <p style="font-size:11px; color:var(--muted); margin:9px 0 0; line-height:1.45;">
     Richtwerte für gespaltenes Scheitholz (Fm→Rm ca. 1,4–1,7 · Fm→Srm ca. 2,0–2,5, je nach Holzart und Spaltung; TFZ Bayern). Faktoren anpassbar.
   </p>
+</div>
+
+<!-- Gewicht -->
+<div class="card pad mb" id="wtCard" style="margin-top:14px;">
+  <div class="toggle-row" style="border-top:none; margin-top:0; padding:0;">
+    <span class="t-label" style="font-weight:600; font-size:13px;">
+      <svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 00-2.4 4.8L4 19a1 1 0 001 1h14a1 1 0 001-1L14.4 7.8A3 3 0 0012 3zm0 2a1 1 0 110 2 1 1 0 010-2z"/></svg>
+      Gewicht berechnen
+    </span>
+    <label class="switch">
+      <input type="checkbox" id="wtToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+  <div id="wtBody" style="display:none;">
+    <div class="wt-tiles">
+      <div class="wt-tile"><div class="k">Gesamtgewicht</div><div class="v" id="wtKg">–</div></div>
+      <div class="wt-tile"><div class="k">In Tonnen</div><div class="v" id="wtT">–</div></div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="wtPreset">Zustand des Holzes</label>
+        <select id="wtPreset">
+          <option value="frisch">Waldfrisch (≈ 50 %)</option>
+          <option value="lufttrocken" selected>Lufttrocken (≈ 20 %)</option>
+          <option value="darr">Absolut trocken (0 %)</option>
+          <option value="eigen">Eigener Wert</option>
+        </select>
+      </div>
+      <div class="field" style="flex:0 0 96px;">
+        <label for="wtW">Wasser (%)</label>
+        <input type="text" id="wtW" inputmode="decimal" value="20">
+      </div>
+    </div>
+    <p class="wt-hint" id="wtHint"></p>
+  </div>
 </div>
 
 <!-- Preis & MwSt -->
@@ -471,6 +515,17 @@ const RINDENABZUG = {
 /* Arten, für die der RVR nur einen Orientierungswert nennt (nicht wiss. hergeleitet, regional abweichend). */
 const ORIENTIERUNG = new Set(["kiefer","eiche","laerche"]);
 
+/* Gewicht: Raumdichte R = kg Trockenmasse je Festmeter, bezogen auf das FRISCHE Volumen
+   (so wird der Festmeter im Wald gemessen). Gewicht je Fm bei Wassergehalt w (Anteil an der
+   Gesamtmasse, wie bei Brennholz üblich):  kg/Fm = R / (1 − w).
+   Quelle: LWF Bayern, Merkblatt 12 „Der Energieinhalt von Holz" (Raumdichte nach Kollmann 1982):
+   Fichte 379, Kiefer 431, Buche 558, Eiche 571 — Formel dort für w = 0/15/20/30/50 % bestätigt.
+   Tanne, Lärche, Douglasie, Esche: NÄHERUNG (aus der TFZ-Darrdichte 0,41/0,55/0,47/0,64 g/cm³
+   abzüglich Schwindmaß hergeleitet bzw. Literaturwert) → in App und PDF als Näherung markiert. */
+const RAUMDICHTE = { fichte:379, tanne:363, kiefer:431, laerche:459, douglasie:413, eiche:571, buche:558, esche:560 };
+const RD_NAEHERUNG = new Set(["tanne","laerche","douglasie","esche"]);
+const WT_PRESETS = { frisch:50, lufttrocken:20, darr:0 };
+
 const K_ITEMS = "koessler.items.v1";
 const K_PREFS = "koessler.prefs.v1";
 
@@ -488,7 +543,7 @@ let editId = null;
 const $ = (id) => document.getElementById(id);
 const els = {
   length:$("length"), diameter:$("diameter"), qty:$("qty"),
-  barkToggle:$("barkToggle"), speciesRow:$("speciesRow"), species:$("species"), speciesHint:$("speciesHint"),
+  barkToggle:$("barkToggle"), species:$("species"), speciesHint:$("speciesHint"),
   form:$("form"), submitLabel:$("submitLabel"), cancelBtn:$("cancelBtn"),
   list:$("list"), count:$("count"), totalVal:$("totalVal"), totalSub:$("totalSub"),
   totalEuro:$("totalEuro"), clearBtn:$("clearBtn"),
@@ -500,6 +555,8 @@ const els = {
   appTitle:$("appTitle"), renameBtn:$("renameBtn"), manifest:$("manifest"),
   rmFactor:$("rmFactor"), srmFactor:$("srmFactor"), rmVal:$("rmVal"), srmVal:$("srmVal"), rmPdfToggle:$("rmPdfToggle"),
   invNo:$("invNo"), payment:$("payment"), rmPreset:$("rmPreset"),
+  wtToggle:$("wtToggle"), wtBody:$("wtBody"), wtPreset:$("wtPreset"), wtW:$("wtW"),
+  wtKg:$("wtKg"), wtT:$("wtT"), wtHint:$("wtHint"), totalWt:$("totalWt"),
 };
 
 /* Holzart-Presets für die Brennholz-Umrechnung (TFZ Bayern, gespaltene 33-cm-Scheite). */
@@ -538,6 +595,24 @@ function volumeEach(it){
 }
 function volumeTotal(it){ return volumeEach(it) * it.qty; }
 
+/* Wassergehalt w in % (0–90). Ungültig/leer → null (dann wird KEIN Gewicht gezeigt statt eines falschen). */
+function waterContent(){
+  const w = num(els.wtW.value);
+  return (isFinite(w) && w >= 0 && w <= 90) ? w : null;
+}
+function kgPerFm(speciesKey, w){
+  const r = RAUMDICHTE[speciesKey];
+  return r ? r / (1 - w/100) : null;
+}
+/* Gewicht eines Eintrags (ganze kg) aus dem gerundeten Festmeter – so ist die Summe nachrechenbar. */
+function itemKg(it, w){
+  const k = kgPerFm(it.species, w);
+  return k == null ? null : Math.round(round3(volumeTotal(it)) * k);
+}
+function setSelect(sel, value){
+  if([...sel.options].some(o => o.value === value)) sel.value = value;
+}
+
 function currentVatRate(){
   if(!els.vatToggle.checked) return 0;
   if(els.vatRate.value === "custom") return num(els.vatCustom.value) || 0;
@@ -552,7 +627,11 @@ function computeTotals(){
   /* Auf ganze Cent runden, damit Netto + MwSt = Brutto auf der Rechnung immer aufgeht. */
   const netto = round2(totalFm * price);
   const mwst = round2(totalFm * price * rate/100);
-  return { totalFm, price, rate, netto, mwst, brutto: netto+mwst, stems: items.reduce((s,it)=>s+it.qty,0) };
+  /* Gewicht: Summe der je Eintrag gerundeten kg (null = aus oder Wassergehalt ungültig) */
+  const wtOn = els.wtToggle.checked;
+  const w = wtOn ? waterContent() : null;
+  const kg = (wtOn && w != null) ? items.reduce((s,it)=>s + (itemKg(it,w) || 0), 0) : null;
+  return { totalFm, price, rate, netto, mwst, brutto: netto+mwst, stems: items.reduce((s,it)=>s+it.qty,0), wtOn, w, kg };
 }
 
 /* --- Speicher --- */
@@ -562,7 +641,10 @@ function loadPrefs(){
   try{
     const p = JSON.parse(localStorage.getItem(K_PREFS)) || {};
     els.barkToggle.checked = !!p.bark;
-    if(p.species) els.species.value = p.species;
+    if(p.species) setSelect(els.species, p.species);
+    els.wtToggle.checked = !!p.wtOn;
+    if(p.wtPreset) setSelect(els.wtPreset, p.wtPreset);
+    if(p.wtW != null) els.wtW.value = p.wtW;
     if(p.price != null) els.price.value = p.price;
     els.vatToggle.checked = !!p.vat;
     if(p.vatRate) els.vatRate.value = p.vatRate;
@@ -588,6 +670,7 @@ function savePrefs(){
     issuer:els.issuer.value, recipient:els.recipient.value,
     rmFactor:els.rmFactor.value, srmFactor:els.srmFactor.value, rmPdf:els.rmPdfToggle.checked,
     rmPreset:els.rmPreset.value, invNo:els.invNo.value, payment:els.payment.value,
+    wtOn:els.wtToggle.checked, wtPreset:els.wtPreset.value, wtW:els.wtW.value,
     appName,
   })); }catch(e){}
 }
@@ -658,7 +741,7 @@ function renameApp(){
 
 /* --- UI-Sync --- */
 function syncReveals(){
-  els.speciesRow.classList.toggle("open", els.barkToggle.checked);
+  els.wtBody.style.display = els.wtToggle.checked ? "block" : "none";
   const vat = els.vatToggle.checked;
   els.rateField.style.opacity = vat ? "1" : ".4";
   els.rateField.style.pointerEvents = vat ? "auto" : "none";
@@ -684,25 +767,30 @@ function render(){
     els.clearBtn.style.display = "none";
   }else{
     els.clearBtn.style.display = "block";
+    const wNow = els.wtToggle.checked ? waterContent() : null;
     for(const it of items){
       const each = volumeEach(it);
       const tot = round3(volumeTotal(it));
+      const artName = RINDENABZUG[it.species]?.name || "";
       let meta;
       if(it.bark){
         const ded = barkDeduction(it.species, it.diameter);
         const eff = Math.max(0, it.diameter - ded);
-        meta = `${fmt(it.length,2)} m · ${RINDENABZUG[it.species]?.name||""} · Ø ${fmt(it.diameter,1)}→${fmt(eff,1)} cm · −${fmt(ded,0)} cm Rinde`;
+        meta = `${fmt(it.length,2)} m · ${artName} · Ø ${fmt(it.diameter,1)}→${fmt(eff,1)} cm · −${fmt(ded,0)} cm Rinde`;
       }else{
-        meta = `${fmt(it.length,2)} m · Ø ${fmt(it.diameter,1)} cm · mit Rinde`;
+        meta = `${fmt(it.length,2)} m · ${artName} · Ø ${fmt(it.diameter,1)} cm · mit Rinde`;
       }
       const mult = it.qty > 1 ? `<span class="mult">(${it.qty} × ≈ ${fmt(each)} Fm)</span>` : "";
       const shown = fmt(tot);
+      const kgItem = wNow != null ? itemKg(it, wNow) : null;
+      const wtLine = kgItem != null ? `<div class="wt">≈ ${fmt(kgItem,0)} kg</div>` : "";
       const el = document.createElement("div");
       el.className = "card item" + (it.id === editId ? " active" : "");
       el.innerHTML = `
         <div class="info">
           <div class="fm">${shown} Fm ${mult}</div>
           <div class="meta">${meta}</div>
+          ${wtLine}
         </div>
         <button class="icon-btn edit" aria-label="Bearbeiten">
           <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>
@@ -746,6 +834,31 @@ function render(){
   /* Brennholz-Umrechnung (Raummeter/Ster + Schüttraummeter) */
   els.rmVal.textContent = fmt(t.totalFm * (num(els.rmFactor.value) || 0), 2) + " Rm";
   els.srmVal.textContent = fmt(t.totalFm * (num(els.srmFactor.value) || 0), 2) + " Srm";
+
+  /* Gewicht: Summenkarte + Gewichts-Karte */
+  if(t.wtOn && t.kg != null && items.length){
+    els.totalWt.style.display = "block";
+    els.totalWt.innerHTML = "≈ " + fmt(t.kg,0) + " kg <span>(" + fmt(t.kg/1000,2) + " t) · " + fmt(t.w,1).replace(/,0$/,"") + " % Wasser</span>";
+  }else{
+    els.totalWt.style.display = "none";
+  }
+  if(t.wtOn){
+    els.wtKg.textContent = t.kg != null ? fmt(t.kg,0) + " kg" : "–";
+    els.wtT.textContent  = t.kg != null ? fmt(t.kg/1000,2) + " t" : "–";
+    updateWtHint(t.w);
+  }
+}
+function updateWtHint(w){
+  if(w == null){
+    els.wtHint.textContent = "Wassergehalt eingeben (0 bis 90 %), sonst kann kein Gewicht berechnet werden.";
+    return;
+  }
+  const sp = els.species.value, nm = RINDENABZUG[sp]?.name || "";
+  const r = RAUMDICHTE[sp], k = kgPerFm(sp, w);
+  const naeh = RD_NAEHERUNG.has(sp) ? " (Näherungswert)" : "";
+  els.wtHint.textContent =
+    `Rechenbasis für die oben gewählte Baumart ${nm}: ${fmt(r,0)} kg Trockenmasse je Fm${naeh} → ${fmt(k,0)} kg je Fm bei ${fmt(w,1).replace(/,0$/,"")} % Wasser. ` +
+    `Der Festmeter gilt frisch, wie im Wald gemessen. Bei „mit Rinde“ steckt die Rinde im Volumen – das Gewicht ist dann leicht zu hoch.`;
 }
 
 /* --- Aktionen --- */
@@ -821,6 +934,18 @@ els.rmPreset.addEventListener("change", ()=>{ applyRmPreset(); savePrefs(); rend
 els.rmFactor.addEventListener("input", ()=>{ els.rmPreset.value = "eigene"; savePrefs(); render(); });
 els.srmFactor.addEventListener("input", ()=>{ els.rmPreset.value = "eigene"; savePrefs(); render(); });
 els.rmPdfToggle.addEventListener("change", savePrefs);
+els.wtToggle.addEventListener("change", ()=>{ syncReveals(); savePrefs(); render(); });
+els.wtPreset.addEventListener("change", ()=>{
+  if(WT_PRESETS[els.wtPreset.value] != null) els.wtW.value = String(WT_PRESETS[els.wtPreset.value]);
+  savePrefs(); render();
+});
+els.wtW.addEventListener("input", ()=>{
+  /* passt der Wert zu einem Zustand, wird dieser angezeigt – sonst „Eigener Wert" */
+  const w = waterContent();
+  const hit = Object.keys(WT_PRESETS).find(k => WT_PRESETS[k] === w);
+  els.wtPreset.value = hit || "eigen";
+  savePrefs(); render();
+});
 els.invNo.addEventListener("input", savePrefs);
 els.payment.addEventListener("input", savePrefs);
 
@@ -828,19 +953,24 @@ els.payment.addEventListener("input", savePrefs);
 els.pdfBtn.addEventListener("click", ()=>{
   if(items.length === 0){ alert("Noch keine Balken zum Ausdrucken."); return; }
   const t = computeTotals();
+  if(t.wtOn && t.kg == null){
+    alert("Das Gewicht ist eingeschaltet, aber der Wassergehalt fehlt oder ist ungültig (0 bis 90 %). Bitte eintragen oder das Gewicht ausschalten.");
+    return;
+  }
   const now = new Date();
   const dateStr = now.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
   const timeStr = now.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
 
   let rows = "";
   items.forEach((it,i)=>{
-    const art = it.bark ? (RINDENABZUG[it.species]?.name || "") : "mit Rinde";
+    const art = RINDENABZUG[it.species]?.name || "–";
     const ded = it.bark ? barkDeduction(it.species, it.diameter) : 0;
     const eff = it.bark ? Math.max(0, it.diameter - ded) : it.diameter;
     const dedTxt = it.bark ? "−" + fmt(ded,0) + " cm" : "–";
+    const kgCell = t.wtOn ? `<td class="r">${fmt(itemKg(it,t.w) || 0,0)}</td>` : "";
     rows += `<tr><td>${i+1}</td><td class="r">${fmt(it.length,2)}</td><td>${art}</td>`
           + `<td class="r">${fmt(it.diameter,1)}</td><td class="r">${dedTxt}</td><td class="r">${fmt(eff,1)}</td>`
-          + `<td class="r">${it.qty}</td><td class="r">${fmt(volumeTotal(it))}</td></tr>`;
+          + `<td class="r">${it.qty}</td><td class="r">${fmt(volumeTotal(it))}</td>${kgCell}</tr>`;
   });
 
   let money = "";
@@ -863,6 +993,13 @@ els.pdfBtn.addEventListener("click", ()=>{
     ? `<div class="pt-row"><span>Raummeter (Ster)</span><span>${fmt(t.totalFm*rmF,2)} Rm</span></div>`
       + `<div class="pt-row"><span>Schüttraummeter</span><span>${fmt(t.totalFm*srmF,2)} Srm</span></div>`
     : "";
+  const wtRow = t.wtOn
+    ? `<div class="pt-row"><span>Gewicht gesamt (${fmt(t.w,1).replace(/,0$/,"")} % Wasser)</span><span>≈ ${fmt(t.kg,0)} kg (${fmt(t.kg/1000,2)} t)</span></div>`
+    : "";
+  const hasNaeh = t.wtOn && items.some(it => RD_NAEHERUNG.has(it.species));
+  const wtNote = t.wtOn
+    ? ` Gewicht: Raumdichte (kg Trockenmasse je Festmeter, LWF-Merkblatt 12/Kollmann) ÷ (1 − Wassergehalt), Festmeter frisch gemessen.${hasNaeh ? " Tanne/Lärche/Douglasie/Esche = Näherungswerte." : ""}`
+    : "";
   const issuer = els.issuer.value.trim();
   const recipient = els.recipient.value.trim();
   const invNo = els.invNo.value.trim();
@@ -882,17 +1019,18 @@ els.pdfBtn.addEventListener("click", ()=>{
 
   els.printArea.innerHTML = headHtml + `
     <table>
-      <thead><tr><th>Nr</th><th class="r">Länge&nbsp;(m)</th><th>Baumart</th><th class="r">Ø&nbsp;gem.</th><th class="r">Rinde</th><th class="r">Ø&nbsp;ger.</th><th class="r">Anz.</th><th class="r">Fm</th></tr></thead>
+      <thead><tr><th>Nr</th><th class="r">Länge&nbsp;(m)</th><th>Baumart</th><th class="r">Ø&nbsp;gem.</th><th class="r">Rinde</th><th class="r">Ø&nbsp;ger.</th><th class="r">Anz.</th><th class="r">Fm</th>${t.wtOn ? '<th class="r">kg</th>' : ''}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="p-tot">
       <div class="pt-row"><span>Stämme gesamt</span><span>${t.stems}</span></div>
       <div class="pt-row ${t.price>0?'':'grand'}"><span>Festmeter gesamt</span><span>${fmt(t.totalFm)} Fm</span></div>
+      ${wtRow}
       ${rmRows}
       ${money}
     </div>
     ${payment ? `<div class="p-pay"><span class="p-plabel">Zahlung</span>${nl2br(payment)}</div>` : ""}
-    <div class="p-foot">Ø gem. = gemessener Mitten-Ø (mit Rinde) · Rinde = abgezogene Rindenstärke · Ø ger. = für die Berechnung verwendeter Ø · Fm = Festmeter (m³).<br>Berechnung nach Huber-Formel V = π·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII).${hasOrient ? " Kiefer/Eiche/Lärche = RVR-Orientierungswert (regional abweichend)." : ""}${showRm ? ` Umrechnung Brennholz: 1 Fm = ${fmt(rmF,2)} Rm = ${fmt(srmF,2)} Srm (Richtwert gespaltenes Scheitholz).` : ""}<br>erstellt mit ${escapeHtml(appName)}</div>`;
+    <div class="p-foot">Ø gem. = gemessener Mitten-Ø (mit Rinde) · Rinde = abgezogene Rindenstärke („–“ = nicht abgezogen, Ø enthält Rinde) · Ø ger. = für die Berechnung verwendeter Ø · Fm = Festmeter (m³).<br>Berechnung nach Huber-Formel V = π·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII).${hasOrient ? " Kiefer/Eiche/Lärche = RVR-Orientierungswert (regional abweichend)." : ""}${wtNote}${showRm ? ` Umrechnung Brennholz: 1 Fm = ${fmt(rmF,2)} Rm = ${fmt(srmF,2)} Srm (Richtwert gespaltenes Scheitholz).` : ""}<br>erstellt mit ${escapeHtml(appName)}</div>`;
 
   const prevTitle = document.title;
   const isoLocal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
