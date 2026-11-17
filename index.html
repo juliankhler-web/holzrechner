@@ -67,6 +67,10 @@
   .wt-tile .k{font-size:12px; color:var(--muted);}
   .wt-tile .v{font-size:20px; font-weight:600; overflow-wrap:anywhere;}
   .wt-hint{font-size:11px; color:var(--muted); margin:10px 0 0; line-height:1.45;}
+  .z-draw{margin:0 0 12px; text-align:center;}
+  .z-draw svg{width:100%; max-width:300px; height:auto; display:block; margin:0 auto;}
+  .z-cap{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.4;}
+  .z-cap b{color:var(--text); font-weight:600;}
 
   /* Karten */
   .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);}
@@ -402,6 +406,7 @@
     <div class="wt-tiles">
       <div class="wt-tile" style="flex:1;"><div class="k">Mindest-Zopf-Ø des Blocks</div><div class="v" id="zVal">–</div></div>
     </div>
+    <div class="z-draw" id="zDraw"></div>
     <label for="zKlasse">Schnittklasse</label>
     <select id="zKlasse"></select>
     <div class="row" style="margin-top:11px;">
@@ -633,7 +638,7 @@ const els = {
   wtToggle:$("wtToggle"), wtBody:$("wtBody"), wtPreset:$("wtPreset"), wtW:$("wtW"),
   wtKg:$("wtKg"), wtT:$("wtT"), wtHint:$("wtHint"), totalWt:$("totalWt"),
   zToggle:$("zToggle"), zBody:$("zBody"), zKlasse:$("zKlasse"), zQuer:$("zQuer"), zArt:$("zArt"),
-  zVal:$("zVal"), zHint:$("zHint"), zWarn:$("zWarn"),
+  zVal:$("zVal"), zHint:$("zHint"), zWarn:$("zWarn"), zDraw:$("zDraw"),
 };
 
 /* Holzart-Presets für die Brennholz-Umrechnung (TFZ Bayern, gespaltene 33-cm-Scheite). */
@@ -940,11 +945,71 @@ function fillZopfSelects(){
   els.zArt.innerHTML = ZOPF_ARTEN.map((a,i) => `<option value="${i}">${a.t}</option>`).join("");
   els.zQuer.value = "14/16";
 }
+/* Zeichnung: Stammquerschnitt (Kreis = Zopf-Ø aus der Tabelle) mit den Kanthölzern im Maßstab.
+   Anordnung wie bei der Prüfung der Tabelle (3 mm Schnittfuge, Art 4 = 1 stehend + 2 liegend).
+   Der Kreis sitzt im Mittelpunkt des kleinsten Kreises um alle Balken; was außerhalb liegt = Baumkante. */
+const Z_FUGE = 0.3;
+function zopfLayout(b, h, art){
+  const K = Z_FUGE, R = (x,y,w,hh) => ({x, y, w, h:hh});
+  switch(art){
+    case 0: return [R(0,0,b,h)];
+    case 1: return [R(0,0,b,h), R(b+K,0,b,h)];
+    case 2: return [R(0,0,b,h), R(b+K,0,b,h), R(2*(b+K),0,b,h)];
+    case 3: { const H = Math.max(h, 2*b+K), ya = (H-h)/2;
+              return [R(0,ya,b,h), R(b+K,0,h,b), R(b+K,b+K,h,b)]; }
+    case 4: return [R(0,0,b,h), R(b+K,0,b,h), R(0,h+K,b,h), R(b+K,h+K,b,h)];
+    case 5: return [0,1,2].flatMap(i => [R(i*(b+K),0,b,h), R(i*(b+K),h+K,b,h)]);
+  }
+  return [];
+}
+/* kleinster Kreis um eine Punktmenge (wenige Punkte → einfaches Durchprobieren reicht) */
+function zMinCircle(pts){
+  const d = (a,c) => Math.hypot(a.x-c.x, a.y-c.y);
+  const inside = (c,r) => pts.every(p => d(p,c) <= r + 1e-6);
+  let best = null;
+  const take = (c,r) => { if(inside(c,r) && (!best || r < best.r)) best = {x:c.x, y:c.y, r}; };
+  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+    const c = {x:(pts[i].x+pts[j].x)/2, y:(pts[i].y+pts[j].y)/2}; take(c, d(pts[i],c));
+    for(let k=j+1;k<pts.length;k++){
+      const A=pts[i], B=pts[j], C=pts[k];
+      const D = 2*(A.x*(B.y-C.y) + B.x*(C.y-A.y) + C.x*(A.y-B.y));
+      if(Math.abs(D) < 1e-9) continue;
+      const a2=A.x*A.x+A.y*A.y, b2=B.x*B.x+B.y*B.y, c2=C.x*C.x+C.y*C.y;
+      const u = {x:(a2*(B.y-C.y)+b2*(C.y-A.y)+c2*(A.y-B.y))/D, y:(a2*(C.x-B.x)+b2*(A.x-C.x)+c2*(B.x-A.x))/D};
+      take(u, d(A,u));
+    }
+  }
+  return best;
+}
+function zopfSvg(kl, q, art, D){
+  const [b,h] = q.split("/").map(Number);
+  const rects = zopfLayout(b, h, art);
+  const pts = rects.flatMap(r => [{x:r.x,y:r.y},{x:r.x+r.w,y:r.y},{x:r.x,y:r.y+r.h},{x:r.x+r.w,y:r.y+r.h}]);
+  const mc = zMinCircle(pts);
+  const cx = mc.x, cy = mc.y, r = D/2;
+  const half = Math.max(r, mc.r) * 1.08 + 1;
+  const vb = `${(cx-half).toFixed(2)} ${(cy-half).toFixed(2)} ${(2*half).toFixed(2)} ${(2*half).toFixed(2)}`;
+  const rectEls = (fill, extra="") => rects.map(R => `<rect x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" fill="${fill}" ${extra}/>`).join("");
+  const id = "zc" + Math.random().toString(36).slice(2,8);
+  const rings = [0.78,0.56,0.34].map(f => `<circle cx="${cx}" cy="${cy}" r="${(r*f).toFixed(2)}" fill="none" stroke="#c9a173" stroke-width="0.6" vector-effect="non-scaling-stroke" opacity=".7"/>`).join("");
+  const wane = mc.r > r + 0.05;  // Balken ragen über den Kreis hinaus → Baumkante
+  return `<svg viewBox="${vb}" role="img" aria-label="Stammquerschnitt Ø ${fmt(D,1)} cm mit ${ZOPF_ARTEN[art].t} ${b} × ${h} cm">
+    <defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#e9cfa6" stroke="#8a4c14" stroke-width="3" vector-effect="non-scaling-stroke"/>
+    ${rings}
+    ${wane ? rectEls("#e57368", 'opacity=".85"') : ""}
+    <g clip-path="url(#${id})">${rectEls("#f6e3c4")}</g>
+    ${rectEls("none", 'stroke="#3b2a17" stroke-width="1.6" vector-effect="non-scaling-stroke"')}
+  </svg>
+  <div class="z-cap"><b>Ø ${fmt(D,1)} cm</b> (Zopf) · ${ZOPF_ARTEN[art].t} à ${b} × ${h} cm${
+    wane ? '<br><span style="color:var(--danger)">Rot</span> = Baumkante (dort fehlt Holz an den Kanten)' : '<br>Scharfkantig: die Ecken berühren gerade den Stamm'}</div>`;
+}
 function renderZopf(){
   if(!els.zToggle.checked) return;
   const kl = els.zKlasse.value, q = els.zQuer.value, art = parseInt(els.zArt.value,10);
   const v = zopfValue(kl, q, art);
   els.zVal.textContent = v == null ? "–" : fmt(v,1) + " cm";
+  els.zDraw.innerHTML = v == null ? "" : zopfSvg(kl, q, art, v);
   const a = ZOPF_ARTEN[art];
   const [b,h] = q.split("/");
   els.zHint.textContent = v == null ? "" :
