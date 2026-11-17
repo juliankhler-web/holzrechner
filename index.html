@@ -68,6 +68,18 @@
   .wt-tile .v{font-size:20px; font-weight:600; overflow-wrap:anywhere;}
   .wt-hint{font-size:11px; color:var(--muted); margin:10px 0 0; line-height:1.45;}
   .z-draw{margin:0 0 12px; text-align:center;}
+  .z-mode{display:flex; gap:4px; background:var(--bg); padding:4px; border-radius:12px; margin:12px 0;}
+  .z-mode button{flex:1; border:none; background:none; color:var(--muted); font:inherit; font-size:13px;
+                 padding:9px 6px; border-radius:10px; cursor:pointer; line-height:1.25;}
+  .z-mode button.on{background:var(--wood); color:#fff; font-weight:600;}
+  .z-fit{margin:0 0 12px;}
+  .z-head, .z-row{display:grid; grid-template-columns:0.8fr 1.6fr 1fr; gap:6px; align-items:center;}
+  .z-head{font-size:11.5px; color:var(--muted); padding:0 8px 4px;}
+  .z-row{width:100%; border:none; border-top:1px solid var(--line); background:none; color:var(--text);
+         font:inherit; font-size:14px; padding:9px 8px; text-align:left; cursor:pointer;}
+  .z-row span:last-child, .z-head span:last-child{text-align:right;}
+  .z-row.on{background:var(--green-soft); font-weight:600; border-radius:8px; border-top-color:transparent;}
+  .z-row small{color:var(--muted); font-weight:400; font-size:11px;}
   .z-draw svg{width:100%; max-width:300px; height:auto; display:block; margin:0 auto;}
   .z-cap{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.4;}
   .z-cap b{color:var(--text); font-weight:600;}
@@ -403,13 +415,22 @@
     </label>
   </div>
   <div id="zBody" style="display:none;">
-    <div class="wt-tiles">
-      <div class="wt-tile" style="flex:1;"><div class="k">Mindest-Zopf-Ø des Blocks</div><div class="v" id="zVal">–</div></div>
+    <div class="z-mode" role="group" aria-label="Was möchtest du wissen?">
+      <button type="button" id="zModeQ" aria-pressed="true">Maß → nötiger Ø</button>
+      <button type="button" id="zModeD" aria-pressed="false">Mein Ø → welche Maße?</button>
     </div>
+    <div id="zDiaRow" style="display:none;">
+      <label for="zDia">Mein Zopf-Ø (cm, dünnes Ende)</label>
+      <input type="text" id="zDia" inputmode="decimal" placeholder="28">
+    </div>
+    <div class="wt-tiles">
+      <div class="wt-tile" style="flex:1;"><div class="k" id="zValK">Mindest-Zopf-Ø des Blocks</div><div class="v" id="zVal">–</div><div class="k" id="zValSub" style="margin-top:2px;"></div></div>
+    </div>
+    <div class="z-fit" id="zFit" style="display:none;"></div>
     <div class="z-draw" id="zDraw"></div>
     <label for="zKlasse">Schnittklasse</label>
     <select id="zKlasse"></select>
-    <div class="row" style="margin-top:11px;">
+    <div class="row" id="zQuerRow" style="margin-top:11px;">
       <div class="field">
         <label for="zQuer">Querschnitt b/h (cm)</label>
         <select id="zQuer"></select>
@@ -488,7 +509,8 @@
 
 <p class="footnote">
   Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
-  Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.
+  Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
+  <b>Version 1.1</b> · 17.11.2026
 </p>
 
 <!-- Kamera-Messung -->
@@ -614,6 +636,20 @@ function zopfValue(klasse, quer, art){
   const row = ZOPF[klasse] && ZOPF[klasse][quer];
   return row ? row[art] : null;
 }
+/* Rückwärts: Welche Querschnitte passen aus einem vorhandenen Zopf-Ø?
+   Je Breite die größte Höhe, deren Mindest-Zopf-Ø ≤ dem eigenen Ø ist. end = höchstes Maß der Tabelle. */
+function zopfFitRows(klasse, art, D){
+  const best = {}, maxH = {};
+  for(const q of ZOPF_QUER){
+    const [b,h] = q.split("/").map(Number);
+    maxH[b] = Math.max(maxH[b] || 0, h);
+    const v = zopfValue(klasse, q, art);
+    if(v == null || v > D + 1e-9) continue;
+    if(!best[b] || h > best[b].h) best[b] = {q, b, h, v};
+  }
+  return Object.values(best).sort((x,y) => x.b - y.b).map(r => ({...r, end: r.h === maxH[r.b]}));
+}
+let zMode = "q", zSel = null;
 
 
 const K_ITEMS = "koessler.items.v1";
@@ -649,6 +685,8 @@ const els = {
   wtKg:$("wtKg"), wtT:$("wtT"), wtHint:$("wtHint"), totalWt:$("totalWt"),
   zToggle:$("zToggle"), zBody:$("zBody"), zKlasse:$("zKlasse"), zQuer:$("zQuer"), zArt:$("zArt"),
   zVal:$("zVal"), zHint:$("zHint"), zWarn:$("zWarn"), zDraw:$("zDraw"),
+  zModeQ:$("zModeQ"), zModeD:$("zModeD"), zDiaRow:$("zDiaRow"), zDia:$("zDia"), zValK:$("zValK"),
+  zValSub:$("zValSub"), zFit:$("zFit"), zQuerRow:$("zQuerRow"),
 };
 
 /* Holzart-Presets für die Brennholz-Umrechnung (TFZ Bayern, gespaltene 33-cm-Scheite). */
@@ -741,6 +779,9 @@ function loadPrefs(){
     if(p.zKlasse) setSelect(els.zKlasse, p.zKlasse);
     if(p.zQuer) setSelect(els.zQuer, p.zQuer);
     if(p.zArt != null) setSelect(els.zArt, String(p.zArt));
+    if(p.zMode === "d") zMode = "d";
+    if(p.zDia != null) els.zDia.value = p.zDia;
+    if(p.zSel && ZOPF.S[p.zSel]) zSel = p.zSel;
     if(p.price != null) els.price.value = p.price;
     els.vatToggle.checked = !!p.vat;
     if(p.vatRate) els.vatRate.value = p.vatRate;
@@ -768,6 +809,7 @@ function savePrefs(){
     rmPreset:els.rmPreset.value, invNo:els.invNo.value, payment:els.payment.value,
     wtOn:els.wtToggle.checked, wtPreset:els.wtPreset.value, wtW:els.wtW.value,
     zOn:els.zToggle.checked, zKlasse:els.zKlasse.value, zQuer:els.zQuer.value, zArt:els.zArt.value,
+    zMode, zDia:els.zDia.value, zSel,
     appName,
   })); }catch(e){}
 }
@@ -1012,22 +1054,72 @@ function zopfSvg(kl, q, art, D){
     ${rectEls("none", 'stroke="#3b2a17" stroke-width="1.6" vector-effect="non-scaling-stroke"')}
   </svg>
   <div class="z-cap"><b>Ø ${fmt(D,1)} cm</b> (Zopf) · ${ZOPF_ARTEN[art].t} à ${b} × ${h} cm${
-    wane ? '<br><span style="color:var(--danger)">Rot</span> = Baumkante (dort fehlt Holz an den Kanten)' : '<br>Scharfkantig: die Ecken berühren gerade den Stamm'}</div>`;
+    wane ? '<br><span style="color:var(--danger)">Rot</span> = Baumkante (dort fehlt Holz an den Kanten)'
+         : (r - mc.r > 0.3 ? '<br>Scharfkantig – rundum bleibt noch Holz übrig' : '<br>Scharfkantig: die Ecken berühren gerade den Stamm')}</div>`;
 }
 function renderZopf(){
   if(!els.zToggle.checked) return;
-  const kl = els.zKlasse.value, q = els.zQuer.value, art = parseInt(els.zArt.value,10);
-  const v = zopfValue(kl, q, art);
-  els.zVal.textContent = v == null ? "–" : fmt(v,1) + " cm";
-  els.zDraw.innerHTML = v == null ? "" : zopfSvg(kl, q, art, v);
-  const a = ZOPF_ARTEN[art];
-  const [b,h] = q.split("/");
-  const calcNote = ZOPF_CALC.has(q) ? "Berechneter Wert – steht nicht in der Vorlage, sondern ist nach ihren Regeln gerechnet (Baumkante A ≤ 1/8 h, B ≤ 1/3 h, C gestreift, S scharfkantig). " : "";
-  els.zHint.textContent = v == null ? "" : calcNote +
-    `${a.n} Kantholz ${b} × ${h} cm aus einem Block, Klasse ${kl}. Gilt für gerade Blöcke ohne Rinde mit einigermaßen rundem Querschnitt (krumm oder oval: stärker wählen). Maße im Trockenzustand, Schnittfugen von 3 mm sind schon dabei. Das ist der Zopf-Durchmesser (dünnes Ende), nicht der Mittendurchmesser.`;
-  const flagged = ZOPF_FLAGS.has(`${kl}|${q}|${art+1}`);
-  els.zWarn.style.display = flagged ? "block" : "none";
-  if(flagged) els.zWarn.textContent = "Achtung: Dieser Wert wirkt in der gedruckten Vorlage auffällig (passt nicht zu den Nachbarwerten, vermutlich ein Druckfehler). Bitte vor dem Einschnitt gegenprüfen.";
+  const rev = zMode === "d";
+  els.zModeQ.classList.toggle("on", !rev); els.zModeQ.setAttribute("aria-pressed", String(!rev));
+  els.zModeD.classList.toggle("on", rev);  els.zModeD.setAttribute("aria-pressed", String(rev));
+  els.zDiaRow.style.display = rev ? "block" : "none";
+  els.zQuerRow.style.display = rev ? "none" : "";
+  els.zFit.style.display = rev ? "block" : "none";
+  const kl = els.zKlasse.value, art = parseInt(els.zArt.value,10), a = ZOPF_ARTEN[art];
+  const rule = "Gilt für gerade Blöcke ohne Rinde mit einigermaßen rundem Querschnitt (krumm oder oval: stärker wählen). Maße im Trockenzustand, Schnittfugen von 3 mm sind schon dabei. Gemeint ist der Zopf-Durchmesser (dünnes Ende), nicht der Mittendurchmesser.";
+  const calcNote = (q) => ZOPF_CALC.has(q) ? "Berechneter Wert – steht nicht in der Vorlage, sondern ist nach ihren Regeln gerechnet (Baumkante A ≤ 1/8 h, B ≤ 1/3 h, C gestreift, S scharfkantig). " : "";
+  const showWarn = (q) => {
+    const flagged = q != null && ZOPF_FLAGS.has(`${kl}|${q}|${art+1}`);
+    els.zWarn.style.display = flagged ? "block" : "none";
+    if(flagged) els.zWarn.textContent = "Achtung: Dieser Wert wirkt in der gedruckten Vorlage auffällig (passt nicht zu den Nachbarwerten, vermutlich ein Druckfehler). Bitte vor dem Einschnitt gegenprüfen.";
+  };
+
+  if(!rev){
+    const q = els.zQuer.value, v = zopfValue(kl, q, art);
+    const [b,h] = q.split("/");
+    els.zValK.textContent = "Mindest-Zopf-Ø des Blocks";
+    els.zValSub.textContent = "";
+    els.zVal.textContent = v == null ? "–" : fmt(v,1) + " cm";
+    els.zDraw.innerHTML = v == null ? "" : zopfSvg(kl, q, art, v);
+    els.zHint.textContent = v == null ? "" : calcNote(q) + `${a.n} Kantholz ${b} × ${h} cm aus einem Block, Klasse ${kl}. ` + rule;
+    showWarn(v == null ? null : q);
+    return;
+  }
+
+  /* Rückwärts: eigener Ø → passende Maße */
+  const D = num(els.zDia.value);
+  els.zValK.textContent = a.n > 1 ? "Größtes Maß je Stück aus deinem Ø" : "Größtes Maß aus deinem Ø";
+  const clear = (val, sub, hint) => {
+    els.zVal.textContent = val; els.zValSub.textContent = sub;
+    els.zFit.innerHTML = ""; els.zDraw.innerHTML = ""; els.zHint.textContent = hint; showWarn(null);
+  };
+  if(!(D > 0 && D <= 300)){
+    clear("–", "Zopf-Ø oben eingeben", "Zopf-Ø in cm eingeben (dünnes Ende, ohne Rinde). Dann zeigt die App, welche Kanthölzer bei der gewählten Klasse und Einschnittart herauspassen.");
+    return;
+  }
+  const rows = zopfFitRows(kl, art, D);
+  if(!rows.length){
+    let qMin = null, need = Infinity;
+    for(const q of ZOPF_QUER){ const v = zopfValue(kl, q, art); if(v != null && v < need){ need = v; qMin = q; } }
+    clear("zu dünn", qMin ? `kleinstes Maß ${qMin.replace("/"," × ")} cm braucht ${fmt(need,1)} cm` : "",
+      `Aus Zopf-Ø ${fmt(D,1)} cm passt bei Klasse ${kl} als „${a.t}" kein Maß aus der Tabelle. Andere Klasse (z. B. C) oder weniger Stück probieren.`);
+    return;
+  }
+  const big = rows.reduce((m,r) => (r.b*r.h > m.b*m.h || (r.b*r.h === m.b*m.h && r.v < m.v)) ? r : m);
+  if(!rows.some(r => r.q === zSel)) zSel = big.q;
+  els.zVal.textContent = `${big.b} × ${big.h} cm`;
+  els.zValSub.textContent = `braucht mind. ${fmt(big.v,1)} cm`;
+  els.zFit.innerHTML = `<div class="z-head"><span>Breite</span><span>größte Höhe</span><span>braucht</span></div>` +
+    rows.map(r => `<button type="button" class="z-row${r.q === zSel ? " on" : ""}" data-q="${r.q}" aria-pressed="${r.q === zSel}">` +
+      `<span>${r.b} cm</span><span>${r.b} × ${r.h}${r.end ? " <small>Ende</small>" : ""}${ZOPF_CALC.has(r.q) ? " <small>ber.</small>" : ""}${ZOPF_FLAGS.has(`${kl}|${r.q}|${art+1}`) ? " ⚠" : ""}</span>` +
+      `<span>${fmt(r.v,1)} cm</span></button>`).join("");
+  els.zDraw.innerHTML = zopfSvg(kl, zSel, art, D);
+  const anyEnd = rows.some(r => r.end), anyCalc = rows.some(r => ZOPF_CALC.has(r.q));
+  els.zHint.textContent = `Je Breite die größte Höhe, die bei Klasse ${kl} als „${a.t}" aus Zopf-Ø ${fmt(D,1)} cm herauspasst. Zeile antippen = Zeichnung. ` +
+    (anyEnd ? "„Ende“ = höchstes Maß der Tabelle – dein Stamm schafft dort vielleicht noch mehr. " : "") +
+    (anyCalc ? "„ber.“ = berechneter Wert, nicht aus der Vorlage. " : "") +
+    calcNote(zSel) + rule;
+  showWarn(zSel);
 }
 function updateWtHint(w){
   if(w == null){
@@ -1128,7 +1220,30 @@ els.wtW.addEventListener("input", ()=>{
   savePrefs(); render();
 });
 els.zToggle.addEventListener("change", ()=>{ syncReveals(); savePrefs(); render(); });
-[els.zKlasse, els.zQuer, els.zArt].forEach(sel => sel.addEventListener("change", ()=>{ savePrefs(); renderZopf(); }));
+[els.zKlasse, els.zQuer, els.zArt].forEach(sel => sel.addEventListener("change", ()=>{
+  if(zMode === "d") zSel = null;         // neue Auswahl → wieder das größte Maß zeigen
+  savePrefs(); renderZopf();
+}));
+els.zModeQ.addEventListener("click", ()=>{
+  if(zMode === "q") return;
+  zMode = "q";
+  if(zSel) setSelect(els.zQuer, zSel);   // gewähltes Maß mitnehmen
+  savePrefs(); renderZopf();
+});
+els.zModeD.addEventListener("click", ()=>{
+  if(zMode === "d") return;
+  zMode = "d";
+  zSel = els.zQuer.value;                // passt es, bleibt es markiert
+  savePrefs(); renderZopf();
+  if(!els.zDia.value.trim()) els.zDia.focus();
+});
+els.zDia.addEventListener("input", ()=>{ zSel = null; savePrefs(); renderZopf(); });
+els.zFit.addEventListener("click", (e)=>{
+  const row = e.target.closest(".z-row");
+  if(!row) return;
+  zSel = row.dataset.q;
+  savePrefs(); renderZopf();
+});
 els.invNo.addEventListener("input", savePrefs);
 els.payment.addEventListener("input", savePrefs);
 
