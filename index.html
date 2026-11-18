@@ -38,6 +38,9 @@
     padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(110px + var(--safe-b));
     max-width:560px; margin:0 auto;
     -webkit-text-size-adjust:100%;
+    /* Seite immer etwas höher als der Bildschirm: Bei kurzen Seiten (z. B. leere Holzliste) blieb in der iPhone-Web-App
+       vom Home-Bildschirm sonst unten ein Streifen unter der Leiste – lange Seiten hatten das nie. */
+    min-height:calc(100vh + 70px);
   }
 
   /* Kopf */
@@ -642,7 +645,7 @@
 <p class="footnote">
   Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
   Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
-  <b>Version 1.4</b> · 18.11.2026 · Web b
+  <b>Version 1.4</b> · 18.11.2026 · Web c
 </p>
 
 <div class="statusfill" aria-hidden="true"></div>
