@@ -645,7 +645,7 @@
 <p class="footnote">
   Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
   Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
-  <b>Version 1.4</b> · 18.11.2026 · Web c
+  <b>Version 1.5</b> · 18.11.2026
 </p>
 
 <div class="statusfill" aria-hidden="true"></div>
@@ -2177,6 +2177,13 @@ const LP = (() => {
     s = s.replace(/\s+/g, " ").replace(/[.]+$/, ".");
     for(const [r, re] of ROLLEN) if(re.test(s) || re.test(s.replace(/\.$/, ""))) return {r, einheit};
     if(!s && einheit) return {r:"einheit", einheit};
+    /* zusammengesetzte Kopfzellen (z. B. cadwork-Stückliste): erst Summen/Volumen ausschließen, dann nach Wortanfang */
+    if(/\b(total|gesamt|summe|m3|m³|vol|volumen|preis|gewicht|kg|lfm|laufm)\b/.test(s)) return {r:"x", einheit};
+    const w = s.split(/[\s\/]+/)[0];
+    const anf = [["b", /^(breite|width|dicke|staerke)$/], ["h", /^(hoehe|height)$/], ["l", /^(laenge|length|lg)$/],
+                 ["n", /^(anzahl|anz|stk|stueck|stueckzahl|menge|count)$/], ["bez", /^(bezeichnung|benennung|bauteil|name|designation)$/],
+                 ["mat", /^(material|holzart|qualitaet|sortierung|festigkeitsklasse)$/], ["pos", /^(nr|pos|position|lfd)$/]];
+    for(const [r, re] of anf) if(re.test(w)) return {r, einheit};
     return null;
   }
   /* deutsche und englische Zahlen: "6,20" "6.20" "1.250,5" "6200" */
@@ -2276,9 +2283,9 @@ const LP = (() => {
     sp.forEach((s, i) => {
       const t = tx[i];
       if(!t) return;
-      if(s.r === "b"){ r.b = zahl(t); r.secU = r.secU || s.einheit; }
-      else if(s.r === "h"){ r.h = zahl(t); r.secU = r.secU || s.einheit; }
-      else if(s.r === "l"){ r.l = zahl(t.replace(/\s*(mm|cm|m)$/i, "")); r.lenU = s.einheit || (t.match(/(mm|cm|m)$/i) || [])[1] || null; }
+      if(s.r === "b"){ if(!isFinite(r.b)){ r.b = zahl(t); r.secU = r.secU || s.einheit; } }
+      else if(s.r === "h"){ if(!isFinite(r.h)){ r.h = zahl(t); r.secU = r.secU || s.einheit; } }
+      else if(s.r === "l"){ if(!isFinite(r.l)){ r.l = zahl(t.replace(/\s*(mm|cm|m)$/i, "")); r.lenU = s.einheit || (t.match(/(mm|cm|m)$/i) || [])[1] || null; } }
       else if(s.r === "n"){ const m = t.match(/\d+(?:[.,]\d+)?/); if(m){ const v = zahl(m[0]); if(Number.isInteger(v)) r.n = v; } }
       else if(s.r === "bh"){ const m = (" " + t + " ").match(QS); if(m){ r.b = zahl(m[1]); r.h = zahl(m[3]); r.secU = r.secU || m[2] || m[4] || s.einheit; if(m[5] != null && !isFinite(r.l)) r.l = zahl(m[5]); } }
       else if(s.r === "bez" || s.r === "mat"){ teile.push(t); }
@@ -2290,6 +2297,21 @@ const LP = (() => {
     }
     return r;
   }
+  /* Kopf über mehrere Zeilen (cadwork: „Breite“ / „SL“ / „[cm]“ übereinander): Zellen aller Kopfzeilen nach waagrechter
+     Überlappung zu Spalten zusammenfassen, Text von oben nach unten aneinanderhängen */
+  const istZahl = (t) => /^-?\d+([.,]\d+)*$/.test(String(t).trim());
+  const kopfartig = (zellen) => zellen.length && !zellen.some(c => istZahl(c.t)) && zellen.some(c => rolle(c.t));
+  function mischen(zeilen){
+    const alle = []; zeilen.forEach((z, i) => z.forEach(c => alle.push({t: c.t, x0: c.x0, x1: c.x1, i})));
+    alle.sort((a, b) => a.x0 - b.x0);
+    const gr = [];
+    for(const c of alle){
+      const g = gr[gr.length - 1];
+      if(g && c.x0 < g.x1 - 0.5) { g.c.push(c); g.x1 = Math.max(g.x1, c.x1); }
+      else gr.push({x0: c.x0, x1: c.x1, c: [c]});
+    }
+    return gr.map(g => ({t: g.c.sort((a, b) => a.i - b.i || a.x0 - b.x0).map(c => c.t).join(" "), x0: g.x0, x1: g.x1}));
+  }
   const median = (a) => { const s = a.filter(isFinite).sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
 
   /* Hauptfunktion: zeilen = [[{t,x0,x1}, …], …] */
@@ -2300,16 +2322,25 @@ const LP = (() => {
     const punkt = alleZ.filter(t => /^0\.\d+$|^\d{4,}\.\d+$|^\d+\.\d{1,2}$|^\d+\.\d{4,}$/.test(t)).length;
     const komma = alleZ.filter(t => /^\d+,\d+$/.test(t)).length;
     punktDezimal = punkt > 0 && komma === 0;
-    let sp = null, name = "";
+    let sp = null, name = "", kpuf = [];
     const pos = [];
     for(const roh of zeilen){
       const zellen = roh.map(c => ({t: opt.ocr ? ocrZiffern(String(c.t).trim()) : String(c.t).trim(), x0:c.x0, x1:c.x1})).filter(c => c.t);
       if(!zellen.length) continue;
       const text = zellen.map(c => c.t).join(" ");
       const k = kopf(zellen);
-      if(k){ sp = k; continue; }
+      if(k){ sp = k; kpuf = []; continue; }
+      if(sp && zellen.every(c => { const ro = rolle(c.t); return ro && ro.r === "einheit"; })){
+        /* Einheitenzeile unter dem Kopf („[mm] [mm] [m]“): Einheit der darüberliegenden Spalte zuordnen */
+        for(const c of zellen){ const ro = rolle(c.t); let best = null, bo = 0; for(const s of sp){ const ov = Math.min(s.x1, c.x1) - Math.max(s.x0, c.x0); if(ov > bo){ bo = ov; best = s; } } if(best && !best.einheit) best.einheit = ro.einheit; }
+        continue;
+      }
+      if(kopfartig(zellen)){
+        kpuf.push(zellen); if(kpuf.length > 4) kpuf.shift();
+        if(kpuf.length > 1){ const km = kopf(mischen(kpuf)); if(km){ sp = km; kpuf = []; continue; } }
+      }else kpuf = [];
       if(!name){
-        const NAME = /^(?:projekt|bauvorhaben|bv|objekt|auftrag|kommission|baustelle)\s*(?:nr\.?)?\s*[:.\-]\s*(.{2,60})$/i;
+        const NAME = /^(?:projekt(?:name)?|bauvorhaben|bv|objekt|auftrag|kommission|baustelle)\s*(?:nr\.?)?\s*[:.\-]\s*(.{2,60})$/i;
         const c = zellen.find(c => NAME.test(c.t)) || (NAME.test(text) ? {t: text} : null);
         if(c){ name = c.t.match(NAME)[1].split(/\s{2,}/)[0].replace(/\s+(?:datum|date|seite|blatt|tel\.?|telefon|kunde|bearbeiter|stand)\b.*$/i, "").trim(); continue; }
       }
@@ -2405,7 +2436,7 @@ const LP = (() => {
       for(const p of z.c){
         const v = m[m.length - 1];
         const luecke = v ? p.x0 - v.x1 : 99;
-        if(v && luecke < Math.max(1, (p.hgt || 8) * 0.15)){ v.t += p.t; v.x1 = Math.max(v.x1, p.x1); }
+        if(v && luecke < Math.max(0.5, (p.hgt || 8) * 0.06)){ v.t += p.t; v.x1 = Math.max(v.x1, p.x1); }
         else m.push({t: String(p.t), x0: p.x0, x1: p.x1});
       }
       return m.flatMap(c => {
@@ -2859,6 +2890,7 @@ async function lsDateiLesen(f){
     const zeilen = await LP.xlsxZeilen(await f.arrayBuffer(), DOMParser);
     return {erg: LP.lies(zeilen), ocr: false, quelle: name, zeilen};
   }
+  if(/^(cwlm|cwp|3d|2dc|ivx|cwps)$/.test(e)) throw new Error("Das ist eine cadwork-Projektdatei, darin steckt das ganze 3D-Modell. Bitte in cadwork die Stückliste als PDF ausgeben (oder als Excel/CSV) und diese Datei einlesen.");
   if(e === "xls") throw new Error("Alte Excel-Dateien (.xls) kann die App nicht lesen. Bitte in Excel als .xlsx oder CSV speichern.");
   if(/^(xml|btlx)$/.test(e) || typ.includes("xml")){
     lsStatus("XML wird gelesen …");
