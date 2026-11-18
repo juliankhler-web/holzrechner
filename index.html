@@ -212,6 +212,74 @@
   .cam-btn.ghost{background:transparent; border:1px solid #444; color:#ddd;}
   .cam-btn.primary{background:var(--green); color:#fff;}
 
+  /* --- Holzliste --- */
+  .ls-plist{display:flex; flex-direction:column; gap:9px; margin-bottom:4px;}
+  .ls-proj{display:block; width:100%; text-align:left; font:inherit; color:inherit; padding:13px 14px; cursor:pointer;}
+  .ls-proj:active{background:var(--bg);}
+  .ls-proj .top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .ls-proj .nm{font-size:16px; font-weight:600; overflow-wrap:anywhere;}
+  .ls-proj .cnt{color:var(--green); font-size:14px; font-weight:600; white-space:nowrap;}
+  .ls-bar{height:7px; background:var(--line); border-radius:4px; margin-top:9px; overflow:hidden;}
+  .ls-bar i{display:block; height:100%; background:var(--green); border-radius:4px; transition:width .2s;}
+  .ls-bar.hell{background:rgba(255,255,255,.28); margin:8px 0 7px;}
+  .ls-bar.hell i{background:#fff;}
+  .ls-meta{font-size:12.5px; color:var(--muted); margin-top:6px;}
+  .ls-back{background:none; border:none; color:var(--green); font:inherit; font-size:14.5px; font-weight:600; padding:6px 2px; margin:-4px 0 6px; cursor:pointer;}
+  .ls-titel span{font-size:15px; font-weight:600; opacity:1; overflow-wrap:anywhere;}
+  .ls-tools{display:flex; gap:8px; margin:0 0 14px;}
+  .ls-tools button{flex:1; min-width:0; height:40px; border:1px solid var(--line); border-radius:11px; background:var(--card);
+                   color:var(--text); font:inherit; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;}
+  .ls-tools button svg{width:16px; height:16px; fill:var(--muted); flex:none;}
+  .ls-tools button.rot{color:var(--danger);} .ls-tools button.rot svg{fill:var(--danger);}
+  .ls-tools button:active{background:var(--bg);}
+  .ls-hide{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); margin:0; font-weight:400; cursor:pointer;}
+  .ls-hide input{width:18px; height:18px; accent-color:var(--green); margin:0;}
+  .ls-items{display:flex; flex-direction:column; gap:9px;}
+  .ls-row{padding:6px 4px 6px 2px; gap:2px;}
+  .ls-row .fm{overflow-wrap:anywhere;}
+  .ls-chk{width:46px; height:46px; flex:none; border:none; background:none; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .ls-chk span{width:27px; height:27px; border-radius:8px; border:2px solid var(--green); display:flex; align-items:center; justify-content:center; transition:background .12s;}
+  .ls-chk.on span{background:var(--green);}
+  .ls-chk svg{width:19px; height:19px; fill:#fff;}
+  .ls-row.done .fm, .ls-row.done .meta{color:var(--muted); text-decoration:line-through;}
+  .ls-row .icon-btn{width:34px; height:38px;}
+  .ls-warn{color:var(--danger); font-weight:600;}
+  .ls-hinweis{font-size:12.5px; color:var(--muted); margin:10px 2px 0; line-height:1.45;}
+  .ls-zwei{display:flex; gap:8px; margin-top:10px;}
+  .ls-zwei .btn-pdf{margin-top:0; flex:1; min-width:0; font-size:14.5px; height:48px; gap:6px; padding:0 6px;}
+  .ls-zwei .btn-pdf svg{flex:none; width:18px; height:18px;}
+  /* Einlesen (Vollbild) */
+  .ls-ov{position:fixed; inset:0; background:var(--bg); z-index:1000; display:none; flex-direction:column;}
+  .ls-ov.open{display:flex;}
+  .ls-ovhead{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; padding-top:calc(12px + env(safe-area-inset-top,0px));
+             border-bottom:1px solid var(--line); background:var(--card);}
+  .ls-ovhead h3{margin:0; font-size:16px; font-weight:600;}
+  .ls-ovzu{background:none; border:none; color:var(--text); font-size:30px; line-height:1; padding:0 6px; cursor:pointer;}
+  .ls-ovbody{flex:1; overflow:auto; -webkit-overflow-scrolling:touch; padding:14px 14px calc(24px + var(--safe-b)); max-width:560px; width:100%; margin:0 auto;}
+  .ls-lade{text-align:center; padding:40px 10px;}
+  .ls-lade p{font-size:15px; margin:14px 0 12px;}
+  .ls-lade .ls-bar{max-width:260px; margin:0 auto 18px;}
+  .ls-spin{width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--green); margin:0 auto; animation:lsdreh 0.9s linear infinite;}
+  @keyframes lsdreh{to{transform:rotate(360deg);}}
+  .ls-info{background:var(--green-soft); border-radius:12px; padding:11px 13px; font-size:13.5px; line-height:1.5; margin-bottom:12px;}
+  .ls-info.warn{background:var(--danger-soft);}
+  .ls-rev{display:flex; flex-direction:column; gap:9px;}
+  .ls-revrow{padding:10px 11px;}
+  .ls-revrow.warn{border-color:var(--danger); box-shadow:0 0 0 1px var(--danger);}
+  .ls-revrow.aus{opacity:.55;}
+  .ls-revtop{display:flex; align-items:center; gap:9px; margin-bottom:8px;}
+  .ls-use{display:flex; align-items:center; gap:5px; margin:0; font-size:12px; white-space:nowrap; cursor:pointer;}
+  .ls-use input{width:20px; height:20px; accent-color:var(--green); margin:0;}
+  .ls-revtop input[type=text]{flex:1; min-width:0; height:40px;}
+  .ls-revnum{display:flex; gap:7px;}
+  .ls-revnum label{flex:1; min-width:0; margin:0; font-size:11.5px;}
+  .ls-revnum input{height:40px; padding:0 8px; margin-top:3px;}
+  .ls-revrow .ls-warn{font-size:12.5px; margin-top:7px;}
+  .ls-src{font-size:11px; color:var(--muted); margin-top:6px; overflow-wrap:anywhere; line-height:1.35;}
+  .ls-roh{margin-top:14px; font-size:13px; color:var(--muted);}
+  .ls-roh summary{cursor:pointer; padding:6px 0;}
+  .ls-roh pre{white-space:pre-wrap; font-size:11px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; max-height:300px; overflow:auto;}
+
   /* --- Druck / PDF --- */
   #printArea{display:none;}
   @media print{
@@ -559,6 +627,9 @@
   <textarea id="payment" rows="2" placeholder="Zahlbar innerhalb 14 Tagen ohne Abzug.&#10;IBAN: DE00 0000 0000 0000 0000 00"></textarea>
 </div>
 
+<!-- Holzliste: Projekte zum Abhaken -->
+<div id="lsView" data-tab="liste"></div>
+
 <button type="button" class="btn-pdf" id="pdfBtn" data-tab="rech">
   <svg viewBox="0 0 24 24"><path d="M19 2H8a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2V4a2 2 0 00-2-2zM8 4h11v12H8zm-4 4H2v12a2 2 0 002 2h12v-2H4z"/></svg>
   Als PDF herunterladen
@@ -567,7 +638,7 @@
 <p class="footnote">
   Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
   Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
-  <b>Version 1.3</b> · 18.11.2026
+  <b>Version 1.4</b> · 18.11.2026
 </p>
 
 <div class="statusfill" aria-hidden="true"></div>
@@ -746,6 +817,56 @@
     <line x1="49.3" y1="44" x2="53.7" y2="44" />
   </g>
 </svg><span>Kantholz</span></button>
+    <button type="button" data-go="liste"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="s5-board" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c98a4b" />
+      <stop offset="60%" stop-color="#b5651d" />
+      <stop offset="100%" stop-color="#8a4c14" />
+    </linearGradient>
+    <linearGradient id="s5-paper" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#f4f2ec" />
+      <stop offset="100%" stop-color="#e5e0d3" />
+    </linearGradient>
+    <linearGradient id="s5-clip" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d9dde0" />
+      <stop offset="100%" stop-color="#8f979d" />
+    </linearGradient>
+    <linearGradient id="s5-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d9e75" />
+      <stop offset="100%" stop-color="#0f6e56" />
+    </linearGradient>
+    <linearGradient id="s5-beam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f3dfc0" />
+      <stop offset="100%" stop-color="#d49e63" />
+    </linearGradient>
+    <filter id="s5-shadow" x="-15%" y="-15%" width="135%" height="135%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.2" flood-color="#2b1808" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  <ellipse cx="31" cy="59" rx="20" ry="2.8" fill="#2b1808" opacity="0.2" />
+  <g filter="url(#s5-shadow)">
+    <rect x="11" y="7" width="40" height="50" rx="5" fill="url(#s5-board)" />
+    <rect x="15" y="12" width="32" height="41" rx="2.5" fill="url(#s5-paper)" />
+    <path d="M24 5.5 H38 a2 2 0 0 1 2 2 V12 a1.5 1.5 0 0 1 -1.5 1.5 H23.5 A1.5 1.5 0 0 1 22 12 V7.5 a2 2 0 0 1 2 -2 Z" fill="url(#s5-clip)" stroke="#6f777c" stroke-width="0.6" />
+    <circle cx="31" cy="8.6" r="1.4" fill="#6f777c" />
+  </g>
+  <g>
+    <rect x="18.5" y="18" width="7" height="7" rx="1.6" fill="url(#s5-green)" />
+    <path d="M20 21.6 l1.6 1.6 l2.6 -3" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    <line x1="29" y1="21.5" x2="42" y2="21.5" stroke="#c4bead" stroke-width="2.2" stroke-linecap="round" />
+    <rect x="18.5" y="29" width="7" height="7" rx="1.6" fill="url(#s5-green)" />
+    <path d="M20 32.6 l1.6 1.6 l2.6 -3" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    <line x1="29" y1="32.5" x2="40" y2="32.5" stroke="#c4bead" stroke-width="2.2" stroke-linecap="round" />
+    <rect x="19" y="40.5" width="6" height="6" rx="1.4" fill="#fff" stroke="#0f6e56" stroke-width="1.4" />
+    <line x1="29" y1="43.5" x2="36" y2="43.5" stroke="#0f6e56" stroke-width="2.2" stroke-linecap="round" opacity="0.7" />
+  </g>
+  <g filter="url(#s5-shadow)" transform="translate(47 47) rotate(-12)">
+    <rect x="-9" y="-6" width="18" height="12" rx="1.2" fill="url(#s5-beam)" stroke="#8a4c14" stroke-width="0.9" />
+    <path d="M-6 -2.5 Q0 -4.5 6 -2.5 M-6 1 Q0 -1 6 1 M-6 4 Q0 2.2 6 4" fill="none" stroke="#b5651d" stroke-width="0.7" opacity="0.75" />
+  </g>
+</svg><span>Holzliste</span></button>
     <button type="button" data-go="rech"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="s4-paper" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -841,6 +962,14 @@
   </div>
 </div>
 
+<!-- Holzliste einlesen: Datei wählen und Prüf-Ansicht -->
+<input type="file" id="lsCam" accept="image/*" capture="environment" style="display:none;">
+<input type="file" id="lsFile" accept=".pdf,application/pdf,image/*,.xml,.btlx,text/xml,application/xml,.csv,text/csv,.txt,text/plain,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;">
+<div class="ls-ov" id="lsOv" role="dialog" aria-modal="true" aria-labelledby="lsOvTitel">
+  <div class="ls-ovhead"><h3 id="lsOvTitel">Holzliste einlesen</h3><button type="button" class="ls-ovzu" id="lsOvClose" aria-label="Schließen">×</button></div>
+  <div class="ls-ovbody" id="lsOvBody"></div>
+</div>
+
 <!-- Druckvorlage (nur beim Drucken sichtbar) -->
 <div id="printArea"></div>
 
@@ -901,8 +1030,9 @@ const Z_ARTEN = [
   {n:6, t:"6 Stück (3 × 2)"},
 ];
 let zMode = "q";
-const TABS = ["stamm", "brenn", "kant", "rech"];
+const TABS = ["stamm", "brenn", "kant", "liste", "rech"];
 let curTab = "stamm";
+let lsOpen = null, lsHide = false;     // Holzliste: offenes Projekt, erledigte ausblenden
 
 
 /* Läuft als App (iOS/Android, Capacitor-Hülle)? Dann: PDF über „Teilen“, Daten zusätzlich im App-Speicher. */
@@ -916,6 +1046,7 @@ function nativSpiegeln(key, value){
 }
 const K_ITEMS = "koessler.items.v1";
 const K_PREFS = "koessler.prefs.v1";
+const K_LISTEN = "koessler.listen.v1";   // Holzlisten (Projekte mit Positionen)
 
 /* Einmalige Übernahme evtl. vorhandener Daten der Vorgänger-Version (Balken UND Einstellungen) */
 try{
@@ -932,7 +1063,7 @@ if(IST_NATIVE){
     if(!P) return;
     try{
       let geholt = false;
-      for(const k of [K_ITEMS, K_PREFS]){
+      for(const k of [K_ITEMS, K_PREFS, K_LISTEN]){
         if(localStorage.getItem(k) == null){
           const r = await P.get({key:k});
           if(r && r.value != null){ localStorage.setItem(k, r.value); geholt = true; }
@@ -941,7 +1072,7 @@ if(IST_NATIVE){
         }
       }
       /* ohne Neuladen übernehmen: Ein Neuladen ließ unter iOS die Abstände zu Uhrzeit-Leiste und Home-Balken wegfallen */
-      if(geholt){ items = load(); loadPrefs(); showTab(curTab); render(); }
+      if(geholt){ items = load(); listen = lsLaden(); loadPrefs(); showTab(curTab); render(); lsRender(); }
     }catch(e){}
   })();
 }
@@ -1189,6 +1320,8 @@ function loadPrefs(){
     if(p.zMode === "d") zMode = "d";
     if(p.zDia != null) els.zDia.value = p.zDia;
     if(TABS.includes(p.tab)) curTab = p.tab;
+    lsOpen = typeof p.lsOpen === "string" ? p.lsOpen : null;
+    lsHide = !!p.lsHide;
     if(p.price != null) els.price.value = p.price;
     els.vatToggle.checked = !!p.vat;
     if(p.vatRate) els.vatRate.value = p.vatRate;
@@ -1217,7 +1350,7 @@ function savePrefs(){
     rmPreset:els.rmPreset.value, invNo:els.invNo.value, payment:els.payment.value,
     wtOn:els.wtToggle.checked, wtPreset:els.wtPreset.value, wtW:els.wtW.value,
     zKlasse:els.zKlasse.value, zB:els.zB.value, zH:els.zH.value, zN:els.zN.value,
-    zMode, zDia:els.zDia.value, tab:curTab,
+    zMode, zDia:els.zDia.value, tab:curTab, lsOpen, lsHide,
     appName,
   })); }catch(e){}
   if(v) nativSpiegeln(K_PREFS, v);
@@ -2010,11 +2143,864 @@ if(IST_NATIVE){
   const lbl = [...els.pdfBtn.childNodes].reverse().find(n => n.nodeType === 3 && n.textContent.trim());
   if(lbl) lbl.textContent = " PDF erstellen und teilen";
 }
+/* HOLZLISTE-PARSER START – reine Rechenlogik ohne Bildschirm, wird in tests/node geprüft */
+/* Eingang: Zeilen aus PDF, Texterkennung, CSV, Excel oder XML. Jede Zeile = Liste von Zellen {t, x0, x1}.
+   Ausgang: Positionen mit Rohwerten (b, h, l, n) und der vermuteten Einheit; die Prüf-Ansicht rechnet erst
+   beim Übernehmen in cm / m um, damit der Nutzer die Einheit noch umstellen kann. */
+const LP = (() => {
+  const low = (s) => String(s || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").trim();
+  const ROLLEN = [
+    ["pos", /^(pos\.?|position|pos\.?-?nr\.?|nr\.?|lfd\.?(nr\.?)?|lnr\.?|znr\.?|hnr\.?|n°|#|singlemembernumber|ordernumber|teil-?nr\.?)$/],
+    ["n",   /^(anz\.?|anzahl|stk\.?|stueck|stueckzahl|st\.|menge|count|qty|quantity|anz\.?\s*stk\.?)$/],
+    ["bez", /^(bezeichnung|bez\.?|benennung|bauteil|bauteilname|name|element|designation|annotation|beschreibung|identbez\.?|teil|holzteil|bauteilbezeichnung|text)$/],
+    ["mat", /^(material|holzart|guete|qualitaet|sortierung|festigkeit(sklasse)?|klasse|timbergrade|qualitygrade|holz|werkstoff)$/],
+    ["bh",  /^(querschnitt|qs|q\.?-?schnitt|b\s*[\/x×*]\s*h|b\s*[\/x×*]\s*h\s*[\/x×*]\s*l|abmessung(en)?|dimension(en)?|masse|profil|format)$/],
+    ["b",   /^(b|b\.|breite|width|dicke|staerke|bre\.?)$/],
+    ["h",   /^(h|h\.|hoehe|height|hoe\.?)$/],
+    ["l",   /^(l|l\.|laenge|length|lg\.?|einzellaenge|wahre laenge|schnittlaenge|zuschnittlaenge|lae\.?|stablaenge)$/],
+    ["x",   /^(vol\.?|volumen|volum|m³|m3|cbm|fm|kubik|gesamt|summe|preis|gewicht|gewi|kg|laufm\.?|lfm|gesamtlaenge|oberfl\.?|einh\.?|pr\/einh|bestnr|identnr\.?|pkt|gebel|lo|ba|kstnr\.?|bzgw|gw\/bz|stabart)$/],
+  ];
+  const EINH = /[\[(]\s*(mm|cm|m)\s*[\])]|(?:^|\s|\/)(mm|cm|m)$/;
+  /* Kopfzelle → Rolle (+ Einheit, falls dabei) */
+  function rolle(text){
+    let s = low(text).replace(/[:]+$/, "");
+    let einheit = null;
+    const mu = s.match(EINH);
+    if(mu){ einheit = mu[1] || mu[2]; s = s.replace(EINH, "").trim(); }
+    s = s.replace(/\s+/g, " ").replace(/[.]+$/, ".");
+    for(const [r, re] of ROLLEN) if(re.test(s) || re.test(s.replace(/\.$/, ""))) return {r, einheit};
+    if(!s && einheit) return {r:"einheit", einheit};
+    return null;
+  }
+  /* deutsche und englische Zahlen: "6,20" "6.20" "1.250,5" "6200" */
+  let punktDezimal = false;
+  function zahl(t){
+    let s = String(t).trim().replace(/\s/g, "");
+    if(!/^-?\d+([.,]\d+)*$/.test(s)) return NaN;
+    if(punktDezimal && /^-?\d+\.\d+$/.test(s)) return parseFloat(s);
+    if(s.includes(",") && s.includes(".")) s = s.lastIndexOf(",") > s.lastIndexOf(".") ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+    else if(s.includes(",")) s = /^\d{1,3}(,\d{3})+$/.test(s) && s.split(",").length > 2 ? s.replace(/,/g, "") : s.replace(",", ".");
+    else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    return parseFloat(s);
+  }
+  /* Lesefehler der Texterkennung in Zahlen: O→0, l/I/|→1 (nur wenn die Zelle sonst aus Ziffern besteht) */
+  function ocrZiffern(t){
+    if(!/\d/.test(t)) return t;
+    if(/^[\dOoIl|.,\/xX×]+$/.test(t)) return t.replace(/[Oo]/g, "0").replace(/[Il|]/g, "1");
+    return t;
+  }
+  const ZAHL = "\\d+(?:[.,]\\d+)?";
+  const QS = new RegExp("(" + ZAHL + ")\\s*(mm|cm)?\\s*[\\/xX×*]\\s*(" + ZAHL + ")(?:\\s*(mm|cm)?\\s*[\\/xX×*]\\s*(" + ZAHL + "))?\\s*(mm|cm|m)?(?![\\d²³])");
+  const SKIP = /\b(summe|gesamtsumme|gesamt|total|uebertrag|zwischensumme|seite\s*\d|blatt\s*\d)\b/;
+
+  /* freie Zeile ohne Tabellenkopf: "14 Stk Sparren 8/18 6,20 m" */
+  /* locker = Texterkennung: Zeile auch ohne lesbaren Querschnitt behalten (Schrägstrich oft nicht erkannt) */
+  function freiZeile(text, locker){
+    let s = " " + String(text).replace(/\s+/g, " ").replace(/\b(?:pos(?:ition)?|nr)\.?\s*\d+[a-z]?\b/gi, " ").replace(/\b[lbh]\s*=\s*/gi, " ") + " ";
+    const m = s.match(QS);
+    if(!m && !locker) return null;
+    const r = {b: NaN, h: NaN, secU: null, l: NaN, lenU: null, n: NaN};
+    if(m){
+      r.b = zahl(m[1]); r.h = zahl(m[3]); r.secU = m[2] || m[4] || null;
+      if(m[5] != null){ r.l = zahl(m[5]); r.lenU = m[6] || null; }
+      else if(m[6] && m[6] !== "m") r.secU = r.secU || m[6];
+      s = s.replace(m[0], " # ");
+    }
+    if(!isFinite(r.l)){
+      const ml = s.match(new RegExp("(" + ZAHL + ")\\s*(mm|cm|m)(?![a-zA-Z²³\\d])"));
+      if(ml){ r.l = zahl(ml[1]); r.lenU = ml[2]; s = s.replace(ml[0], " # "); }
+      else{
+        const md = s.match(new RegExp("(?:^|\\s)(\\d{1,2}[.,]\\d{1,3})(?=\\s|$)"));
+        if(md){ r.l = zahl(md[1]); r.lenU = "m"; s = s.replace(md[1], " # "); }
+        else{
+          const ints = [...s.matchAll(/(?:^|\s)(\d{3,5})(?=\s|$)/g)].map(x => x[1]);
+          if(ints.length){ const g = ints.sort((a, b) => b - a)[0]; r.l = zahl(g); s = s.replace(g, " # "); }
+        }
+      }
+    }
+    const mn = s.match(/(\d{1,4})\s*(?:stk\.?|stck\.?|stueck|stück|st\.|x(?=\s)|×)/i) || s.match(/(?:stk\.?|anz\.?|anzahl)\s*:?\s*(\d{1,4})/i);
+    if(mn){ r.n = parseInt(mn[1], 10); s = s.replace(mn[0], " # "); }
+    else{
+      const ints = [...s.matchAll(/(?:^|\s)(\d{1,4})(?=\s|$)/g)].map(x => x[1]);
+      if(ints.length >= 2){ r.n = parseInt(ints[1], 10); }
+      else if(ints.length === 1){ r.n = parseInt(ints[0], 10); r.nUnsicher = true; }
+    }
+    r.bez = s.replace(/#/g, " ").replace(/(?:^|\s)\d+(?:[.,]\d+)?(?=\s|$)/g, " ")
+             .replace(/(?:^|\s)(stk|stck|st|stück|stueck|mm|cm|m|lfm|anz|x|lang|lg)\.?(?=[\s,;]|$)/gi, " ").replace(/[|;~]+/g, " ")
+             .replace(/\s+[,.:]+(?=\s|$)/g, " ").replace(/^[\s,.:\-]+|[\s,.:\-]+$/g, "").replace(/\s+/g, " ").trim();
+    return r;
+  }
+
+  /* Kopfzeile erkennen: mindestens Länge und Querschnitt (b+h oder b/h) und drei Rollen insgesamt */
+  function kopf(zellen){
+    const sp = [];
+    for(const c of zellen){
+      const ro = rolle(c.t);
+      if(!ro){ sp.push({r:"?", x0:c.x0, x1:c.x1, einheit:null}); continue; }
+      if(ro.r === "einheit"){ const v = sp[sp.length - 1]; if(v && !v.einheit) v.einheit = ro.einheit; continue; }
+      sp.push({r:ro.r, x0:c.x0, x1:c.x1, einheit:ro.einheit});
+    }
+    const hat = (r) => sp.some(s => s.r === r);
+    const bekannt = sp.filter(s => s.r !== "?" && s.r !== "x").length;
+    if(!(hat("l") && ((hat("b") && hat("h")) || hat("bh")) && bekannt >= 3)) return null;
+    if(sp.filter(s => s.r === "?").length > bekannt + 2) return null;
+    return sp;
+  }
+  /* Datenzellen den Spalten zuordnen: liegt die Zelle unter einer Kopfzelle, gilt diese (größte Überlappung);
+     sonst der Bereich ab Beginn einer Kopfzelle bis zum Beginn der nächsten (rechtsbündige Zahlen unter linksbündigem Kopf) */
+  function zuordnen(sp, zellen){
+    const tx = sp.map(() => []);
+    for(const c of zellen){
+      let best = -1, bestOv = 0;
+      sp.forEach((s, i) => { const ov = Math.min(s.x1, c.x1) - Math.max(s.x0, c.x0); if(ov > bestOv){ bestOv = ov; best = i; } });
+      if(best < 0){
+        const cx = (c.x0 + c.x1) / 2;
+        best = 0;
+        sp.forEach((s, i) => { if(s.x0 <= cx) best = i; });
+      }
+      tx[best].push(c.t);
+    }
+    return tx.map(a => a.join(" ").trim());
+  }
+  function ausKopf(sp, zellen){
+    const tx = zuordnen(sp, zellen);
+    const r = {b:NaN, h:NaN, l:NaN, n:NaN, bez:"", secU:null, lenU:null};
+    const teile = [];
+    sp.forEach((s, i) => {
+      const t = tx[i];
+      if(!t) return;
+      if(s.r === "b"){ r.b = zahl(t); r.secU = r.secU || s.einheit; }
+      else if(s.r === "h"){ r.h = zahl(t); r.secU = r.secU || s.einheit; }
+      else if(s.r === "l"){ r.l = zahl(t.replace(/\s*(mm|cm|m)$/i, "")); r.lenU = s.einheit || (t.match(/(mm|cm|m)$/i) || [])[1] || null; }
+      else if(s.r === "n"){ const m = t.match(/\d+(?:[.,]\d+)?/); if(m){ const v = zahl(m[0]); if(Number.isInteger(v)) r.n = v; } }
+      else if(s.r === "bh"){ const m = (" " + t + " ").match(QS); if(m){ r.b = zahl(m[1]); r.h = zahl(m[3]); r.secU = r.secU || m[2] || m[4] || s.einheit; if(m[5] != null && !isFinite(r.l)) r.l = zahl(m[5]); } }
+      else if(s.r === "bez" || s.r === "mat"){ teile.push(t); }
+    });
+    r.bez = teile.join(" · ").replace(/\s+/g, " ").trim();
+    if(!(isFinite(r.b) && isFinite(r.h))){
+      const f = freiZeile(zellen.map(c => c.t).join(" "));
+      if(f && isFinite(f.b) && isFinite(f.h)){ r.b = f.b; r.h = f.h; r.secU = r.secU || f.secU; if(!isFinite(r.l)){ r.l = f.l; r.lenU = f.lenU; } if(!r.bez) r.bez = f.bez; if(!isFinite(r.n)) r.n = f.n; }
+    }
+    return r;
+  }
+  const median = (a) => { const s = a.filter(isFinite).sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
+
+  /* Hauptfunktion: zeilen = [[{t,x0,x1}, …], …] */
+  function lies(zeilen, opt){
+    opt = opt || {};
+    /* Schreibt das Dokument Dezimalpunkte („0.080“, „6200.000“, „6.2“) und nirgends Dezimalkommas? Dann ist „6.200“ = 6,2 */
+    const alleZ = zeilen.flat().map(c => String(c.t).trim()).filter(t => /^\d+([.,]\d+)+$/.test(t));
+    const punkt = alleZ.filter(t => /^0\.\d+$|^\d{4,}\.\d+$|^\d+\.\d{1,2}$|^\d+\.\d{4,}$/.test(t)).length;
+    const komma = alleZ.filter(t => /^\d+,\d+$/.test(t)).length;
+    punktDezimal = punkt > 0 && komma === 0;
+    let sp = null, name = "";
+    const pos = [];
+    for(const roh of zeilen){
+      const zellen = roh.map(c => ({t: opt.ocr ? ocrZiffern(String(c.t).trim()) : String(c.t).trim(), x0:c.x0, x1:c.x1})).filter(c => c.t);
+      if(!zellen.length) continue;
+      const text = zellen.map(c => c.t).join(" ");
+      const k = kopf(zellen);
+      if(k){ sp = k; continue; }
+      if(!name){
+        const NAME = /^(?:projekt|bauvorhaben|bv|objekt|auftrag|kommission|baustelle)\s*(?:nr\.?)?\s*[:.\-]\s*(.{2,60})$/i;
+        const c = zellen.find(c => NAME.test(c.t)) || (NAME.test(text) ? {t: text} : null);
+        if(c){ name = c.t.match(NAME)[1].split(/\s{2,}/)[0].replace(/\s+(?:datum|date|seite|blatt|tel\.?|telefon|kunde|bearbeiter|stand)\b.*$/i, "").trim(); continue; }
+      }
+      if(SKIP.test(low(text))) continue;
+      let r = sp ? ausKopf(sp, zellen) : freiZeile(text);
+      let unvollst = false;
+      if((!r || !(isFinite(r.b) && isFinite(r.h))) && opt.ocr){
+        /* Foto/Scan: Zeile mit Namen und Länge behalten, Querschnitt muss der Nutzer nachtragen */
+        const f = freiZeile(text, true);
+        if(f && /[a-zäöüß]{3,}/i.test(f.bez) && isFinite(f.l) && f.lenU === "m"){ r = Object.assign({}, f, r && r.bez ? {bez: r.bez} : {}); r.b = NaN; r.h = NaN; unvollst = true; }
+      }
+      if(!r) continue;
+      if(!unvollst && (!(isFinite(r.b) && isFinite(r.h)) || r.b <= 0 || r.h <= 0)) continue;
+      if(!isFinite(r.l) || r.l <= 0) r.l = NaN;
+      if(!/[a-zäöüß]/i.test(r.bez)) r.bez = r.bez.replace(/[^\wäöüß .\-\/]/gi, "").trim();
+      if(opt.ocr) r.bez = r.bez.replace(/(?:^|\s)[^\s\d](?=\s|$)/g, " ").replace(/[%§$&@]+/g, " ").replace(/\s+/g, " ").trim();
+      pos.push({bez: r.bez || "", b: r.b, h: r.h, l: r.l, n: isFinite(r.n) && r.n > 0 ? r.n : 1,
+                nUnsicher: !isFinite(r.n) || !!r.nUnsicher, secU: r.secU, lenU: r.lenU, src: text, kopf: !!sp, unvollst});
+    }
+    /* Einheit fürs ganze Dokument schätzen, wo sie nicht dabei stand */
+    const secRoh = pos.filter(p => !p.secU && isFinite(p.b)).map(p => Math.max(p.b, p.h));
+    const mS = median(secRoh);
+    const secU = !isFinite(mS) ? "cm" : mS < 1.5 ? "m" : mS <= 45 ? "cm" : "mm";
+    const lenRoh = pos.filter(p => !p.lenU && isFinite(p.l)).map(p => p.l);
+    const mL = median(lenRoh);
+    const lenU = !isFinite(mL) ? "m" : mL <= 40 ? "m" : "mm";
+    const expl = (k) => { const c = {}; pos.forEach(p => { if(p[k]) c[p[k]] = (c[p[k]] || 0) + 1; }); const e = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return e ? e[0] : null; };
+    return {pos, name, secU: expl("secU") || secU, lenU: expl("lenU") || lenU, mitKopf: pos.some(p => p.kopf)};
+  }
+
+  /* CSV/TXT: Trennzeichen erkennen (Dietrich's: ~), Zellen bekommen ihre Spaltennummer als Lage */
+  function csvZeilen(text){
+    const zeilen = String(text).replace(/\r\n?/g, "\n").split("\n").filter(z => z.trim());
+    const probe = zeilen.slice(0, 20).join("\n");
+    const kand = ["~", ";", "\t", "|", ","];
+    let sep = ";", best = -1;
+    for(const k of kand){ const n = probe.split(k).length - 1; if(n > best * 1.2 || (k !== "," && n > 0 && best <= 0)){ if(n > 0){ best = n; sep = k; } } }
+    if(sep === "," && /\d,\d/.test(probe) && (probe.split(";").length > 1)) sep = ";";
+    const teile = (z) => {
+      const out = []; let cur = "", q = false;
+      for(let i = 0; i < z.length; i++){
+        const ch = z[i];
+        if(ch === '"'){ if(q && z[i + 1] === '"'){ cur += '"'; i++; } else q = !q; }
+        else if(ch === sep && !q){ out.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out;
+    };
+    return zeilen.map(z => teile(z).map((t, i) => ({t: t.trim(), x0: i, x1: i + 0.999})));
+  }
+  /* XML: BTLx (Abbundmaschinen) und allgemeine Listen, bei denen ein Element pro Balken Länge/Breite/Höhe trägt */
+  function xmlZeilen(doc){
+    const out = [];
+    let kopfZ = null;
+    const btlx = /btlx/i.test((doc.documentElement && (doc.documentElement.localName || doc.documentElement.nodeName)) || "");
+    const alle = doc.getElementsByTagName("*");
+    for(let i = 0; i < alle.length; i++){
+      const el = alle[i];
+      const werte = {};
+      for(const a of Array.from(el.attributes || [])) werte[a.name] = a.value;
+      for(const k of Array.from(el.children || [])) if(!k.children.length && k.textContent.trim()) werte[k.localName || k.nodeName] = k.textContent.trim();
+      const namen = Object.keys(werte);
+      if(btlx && (el.localName || el.nodeName) !== "Part") continue;
+      const rollen = namen.map(n => (rolle(n) || rolle(n.replace(/[_\-]/g, " ")) || {r:"?"}).r);
+      const hat = (r) => rollen.includes(r);
+      if(!(hat("l") && ((hat("b") && hat("h")) || hat("bh")))) continue;
+      const sp = [];
+      namen.forEach((n, j) => { if(rollen[j] !== "?" && rollen[j] !== "x" && rollen[j] !== "pos") sp.push({n, r: rollen[j]}); });
+      const reihenfolge = ["n", "bez", "mat", "bh", "b", "h", "l"];
+      sp.sort((a, b) => reihenfolge.indexOf(a.r) - reihenfolge.indexOf(b.r));
+      const titel = sp.map(s => s.r === "n" ? "Anzahl" : s.r === "bez" ? "Bezeichnung" : s.r === "mat" ? "Material" : s.r === "bh" ? "Querschnitt" : s.r === "b" ? "Breite" : s.r === "h" ? "Höhe" : "Länge");
+      const sig = titel.join("|");
+      if(sig !== kopfZ){ out.push(titel.map((t, j) => ({t, x0: j, x1: j + 0.999}))); kopfZ = sig; }
+      out.push(sp.map((s, j) => ({t: werte[s.n], x0: j, x1: j + 0.999})));
+    }
+    return {zeilen: out, btlx};
+  }
+  /* PDF-/Texterkennungs-Bruchstücke {t,x0,x1,y,hgt} → Zeilen (gleiche Höhe = gleiche Zeile) */
+  function zuZeilen(stuecke){
+    const s = stuecke.filter(p => String(p.t).trim()).sort((a, b) => a.y - b.y || a.x0 - b.x0);
+    const zeilen = [];
+    for(const p of s){
+      const z = zeilen[zeilen.length - 1];
+      const tol = Math.max(2, (p.hgt || 8) * 0.55);
+      if(z && Math.abs(z.y - p.y) <= tol){ z.c.push(p); z.y = (z.y * (z.c.length - 1) + p.y) / z.c.length; }
+      else zeilen.push({y: p.y, c: [p]});
+    }
+    return zeilen.map(z => {
+      z.c.sort((a, b) => a.x0 - b.x0);
+      /* direkt aneinanderstoßende Stücke (ein Wort in mehreren Teilen) zusammenfügen */
+      const m = [];
+      for(const p of z.c){
+        const v = m[m.length - 1];
+        const luecke = v ? p.x0 - v.x1 : 99;
+        if(v && luecke < Math.max(1, (p.hgt || 8) * 0.15)){ v.t += p.t; v.x1 = Math.max(v.x1, p.x1); }
+        else m.push({t: String(p.t), x0: p.x0, x1: p.x1});
+      }
+      return m.flatMap(c => {
+        /* Zellen mit großen Leerräumen („Sparren      8/18“) in Teile aufteilen */
+        const teile = c.t.split(/\s{2,}/);
+        if(teile.length < 2) return [{t: c.t.trim(), x0: c.x0, x1: c.x1}];
+        const breite = (c.x1 - c.x0) / Math.max(1, c.t.length);
+        let pos = 0; const r = [];
+        for(const t of c.t.split(/(\s{2,})/)){ if(/^\s+$/.test(t) || !t){ pos += t.length; continue; } r.push({t: t.trim(), x0: c.x0 + pos * breite, x1: c.x0 + (pos + t.length) * breite}); pos += t.length; }
+        return r;
+      });
+    });
+  }
+  /* Excel (.xlsx) ohne fremden Baustein: ZIP-Inhaltsverzeichnis lesen, Dateien mit DecompressionStream entpacken */
+  async function zipDateien(buf, gesucht){
+    const u = new Uint8Array(buf), dv = new DataView(u.buffer, u.byteOffset, u.byteLength);
+    let e = u.length - 22;
+    while(e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+    if(e < 0) throw new Error("Keine gültige Excel-Datei");
+    const anzahl = dv.getUint16(e + 10, true);
+    let p = dv.getUint32(e + 16, true);
+    const td = new TextDecoder("utf-8"), aus = {};
+    for(let i = 0; i < anzahl; i++){
+      if(dv.getUint32(p, true) !== 0x02014b50) break;
+      const methode = dv.getUint16(p + 10, true), groesse = dv.getUint32(p + 20, true);
+      const nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), kl = dv.getUint16(p + 32, true);
+      const lokal = dv.getUint32(p + 42, true);
+      const name = td.decode(u.subarray(p + 46, p + 46 + nl));
+      p += 46 + nl + xl + kl;
+      if(!gesucht(name)) continue;
+      const start = lokal + 30 + dv.getUint16(lokal + 26, true) + dv.getUint16(lokal + 28, true);
+      const roh = u.subarray(start, start + groesse);
+      let daten;
+      if(methode === 0) daten = roh;
+      else if(methode === 8){
+        if(typeof DecompressionStream === "undefined") throw new Error("Dieses Gerät kann Excel-Dateien nicht entpacken. Bitte die Liste als CSV oder PDF speichern.");
+        const st = new Blob([roh]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        daten = new Uint8Array(await new Response(st).arrayBuffer());
+      }else continue;
+      aus[name] = td.decode(daten);
+    }
+    return aus;
+  }
+  async function xlsxZeilen(buf, DP){
+    const f = await zipDateien(buf, n => n === "xl/sharedStrings.xml" || /^xl\/worksheets\/sheet\d+\.xml$/.test(n));
+    const blatt = Object.keys(f).filter(n => n.startsWith("xl/worksheets/")).sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]))[0];
+    if(!blatt) throw new Error("Kein Tabellenblatt gefunden");
+    const P = new DP(), alle = (d, n) => Array.from(d.getElementsByTagName(n));
+    const geteilt = f["xl/sharedStrings.xml"] ? alle(P.parseFromString(f["xl/sharedStrings.xml"], "text/xml"), "si").map(si => alle(si, "t").map(t => t.textContent).join("")) : [];
+    const doc = P.parseFromString(f[blatt], "text/xml");
+    const spalte = (ref) => { let n = 0; for(const ch of String(ref).replace(/\d+/g, "")) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+    return alle(doc, "row").map(r => alle(r, "c").map(c => {
+      const typ = c.getAttribute("t"), v = (c.getElementsByTagName("v")[0] || {}).textContent;
+      let t = typ === "s" ? geteilt[+v] : typ === "inlineStr" ? alle(c, "t").map(x => x.textContent).join("") : v;
+      if(t == null) t = "";
+      if(typ !== "s" && typ !== "inlineStr" && typ !== "str" && /^-?\d+\.\d+(e-?\d+)?$/i.test(t)) t = String(+(+t).toFixed(6)).replace(".", ",");
+      const i = spalte(c.getAttribute("r"));
+      return {t: String(t), x0: i, x1: i + 0.999};
+    }).filter(c => c.t !== ""));
+  }
+  /* Texterkennung: deren eigene Zeilen nehmen (bleiben auch bei schiefem Foto zusammen). Die Lage der Wörter
+     wird auf die Zeilenneigung zurückgerechnet, damit die Spalten über die ganze Seite zusammenpassen. */
+  function ocrZeilen(daten){
+    const zeilen = (daten.lines || []).filter(l => l.words && l.words.length);
+    let neig = [];
+    for(const l of zeilen){ const w = l.words; if(w.length >= 3){ const a = w[0].bbox, b = w[w.length - 1].bbox; const dx = b.x0 - a.x0; if(dx > 100) neig.push(((b.y0 + b.y1) - (a.y0 + a.y1)) / 2 / dx); } }
+    neig.sort((x, y) => x - y);
+    const t = neig.length ? neig[Math.floor(neig.length / 2)] : 0;
+    return zeilen.map(l => l.words.map(w => {
+      const yc = (w.bbox.y0 + w.bbox.y1) / 2;
+      return {t: w.text, x0: w.bbox.x0 + yc * t, x1: w.bbox.x1 + yc * t};
+    }));
+  }
+  const FAKTOR_SEC = {cm: 1, mm: 0.1, m: 100};
+  const FAKTOR_LEN = {m: 1, cm: 0.01, mm: 0.001};
+  return {lies, csvZeilen, xmlZeilen, xlsxZeilen, ocrZeilen, zuZeilen, zahl, rolle, freiZeile, FAKTOR_SEC, FAKTOR_LEN};
+})();
+/* HOLZLISTE-PARSER ENDE */
+
+/* --- Holzliste: Projekte mit Positionen zum Abhaken, Einlesen aus PDF / Foto / XML / CSV / Excel --- */
+function lsLaden(){ try{ const v = JSON.parse(localStorage.getItem(K_LISTEN)); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
+function lsSpeichern(){ const v = JSON.stringify(listen); try{ localStorage.setItem(K_LISTEN, v); }catch(e){ alert("Speicher voll: Die Holzliste konnte nicht gesichert werden."); } nativSpiegeln(K_LISTEN, v); }
+let listen = lsLaden();
+let lsEditPos = null;          // Position, die gerade im Formular geändert wird
+const lsNeueId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const lsCm = (v) => isFinite(v) ? fmt(v, 1).replace(/,0$/, "") : "?";
+const lsM3 = (p) => (isFinite(p.b) && isFinite(p.h) && isFinite(p.l)) ? p.b * p.h / 10000 * p.l * (p.n || 1) : 0;
+const lsProj = () => listen.find(p => p.id === lsOpen) || null;
+function lsSumme(pr){
+  const pos = pr.pos || [];
+  const fertig = pos.filter(p => p.done);
+  const m3 = pos.reduce((s, p) => s + lsM3(p), 0), m3f = fertig.reduce((s, p) => s + lsM3(p), 0);
+  const stk = pos.reduce((s, p) => s + (p.n || 0), 0), stkf = fertig.reduce((s, p) => s + (p.n || 0), 0);
+  return {anz: pos.length, fertig: fertig.length, m3, offen: m3 - m3f, stk, stkf};
+}
+const lsIco = {
+  check: '<svg viewBox="0 0 24 24"><path d="M9.5 16.6 4.9 12l-1.4 1.4 6 6 11-11-1.4-1.4z"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>',
+  del: '<svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6zm3-10h2v9H9zm4 0h2v9h-2zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>',
+  zopf: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 2a8 8 0 110 16 8 8 0 010-16zM8 8h8v8H8z"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>',
+  datei: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm4 18H6V4h7v5h5zM8 12h8v2H8zm0 4h8v2H8z"/></svg>',
+  pdf: '<svg viewBox="0 0 24 24"><path d="M19 2H8a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2V4a2 2 0 00-2-2zM8 4h11v12H8zm-4 4H2v12a2 2 0 002 2h12v-2H4z"/></svg>',
+  foto: '<svg viewBox="0 0 24 24"><path d="M9 3 7.5 5H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2h-3.5L15 3zm3 5a5 5 0 110 10 5 5 0 010-10zm0 2.2A2.8 2.8 0 1012 15.8 2.8 2.8 0 0012 10.2z"/></svg>',
+};
+
+function lsRender(){
+  const v = $("lsView");
+  if(!v) return;
+  const pr = lsProj();
+  if(!pr){ lsOpen = null; v.innerHTML = lsUebersichtHtml(); }
+  else v.innerHTML = lsProjektHtml(pr);
+}
+function lsUebersichtHtml(){
+  let h = `<div class="list-head"><h2>Holzlisten</h2></div>`;
+  if(!listen.length){
+    h += `<div class="card empty">${lsIco.datei}Noch keine Holzliste. Lege ein Projekt an, z. B. „Dachstuhl Müller“, und trage die Balken ein. Oder lies eine fertige Liste ein.</div>`;
+  }else{
+    h += `<div class="ls-plist">` + listen.map(pr => {
+      const s = lsSumme(pr), proz = s.anz ? Math.round(s.fertig / s.anz * 100) : 0, ganz = s.anz && s.fertig === s.anz;
+      return `<button type="button" class="card ls-proj" data-ls-open="${pr.id}">
+        <div class="top"><span class="nm">${escapeHtml(pr.name)}</span><span class="cnt">${ganz ? "✓ fertig" : s.fertig + "/" + s.anz}</span></div>
+        <div class="ls-bar"><i style="width:${proz}%"></i></div>
+        <div class="ls-meta">${s.anz} Position${s.anz === 1 ? "" : "en"} · ${fmt(s.m3)} m³${s.anz && !ganz ? " · noch " + fmt(s.offen) + " m³ offen" : ""}</div>
+      </button>`;
+    }).join("") + `</div>`;
+  }
+  h += `<button type="button" class="btn-add" data-ls="neu">${lsIco.plus}Neues Projekt</button>
+        <div class="ls-zwei">
+          <button type="button" class="btn-pdf" data-ls="import">${lsIco.datei}Datei einlesen</button>
+          <button type="button" class="btn-pdf" data-ls="foto">${lsIco.foto}Liste fotografieren</button>
+        </div>
+        <p class="ls-hinweis">Einlesen: PDF, XML (auch BTLx), CSV, Excel oder ein Foto der Liste. Vor dem Übernehmen prüfst du jede Zeile.</p>`;
+  return h;
+}
+function lsProjektHtml(pr){
+  const s = lsSumme(pr);
+  const ed = lsEditPos ? (pr.pos || []).find(p => p.id === lsEditPos) : null;
+  const val = (k, d) => ed ? (k === "bez" ? escapeHtml(ed.bez || "") : k === "l" ? (isFinite(ed.l) ? fmt(ed.l, 2) : "") : k === "n" ? String(ed.n || 1) : (isFinite(ed[k]) ? lsCm(ed[k]) : "")) : d;
+  let h = `<button type="button" class="ls-back" data-ls="zurueck">‹ Alle Holzlisten</button>
+  <div class="total" role="status">
+    <div class="lbl ls-titel"><span>${escapeHtml(pr.name)}</span></div>
+    <div class="val">${s.fertig}<small> von ${s.anz} erledigt</small></div>
+    <div class="ls-bar hell"><i style="width:${s.anz ? Math.round(s.fertig / s.anz * 100) : 0}%"></i></div>
+    <div class="sub">${fmt(s.m3)} m³ gesamt${s.anz ? " · noch " + fmt(s.offen) + " m³ offen" : ""} · ${s.stkf} von ${s.stk} Stück fertig</div>
+  </div>
+  <div class="ls-tools">
+    <button type="button" data-ls="umbenennen" aria-label="Projekt umbenennen">${lsIco.edit}Name</button>
+    <button type="button" data-ls="import" aria-label="Datei einlesen">${lsIco.datei}Datei</button>
+    <button type="button" data-ls="foto" aria-label="Liste fotografieren">${lsIco.foto}Foto</button>
+    <button type="button" data-ls="projLoeschen" class="rot" aria-label="Projekt löschen">${lsIco.del}Löschen</button>
+  </div>
+  <form class="card pad mb" id="lsForm" autocomplete="off">
+    <p class="card-title">${lsIco.plus}${ed ? "Position ändern" : "Position hinzufügen"}</p>
+    <div class="row"><div class="field"><label for="lsBez">Bezeichnung</label><input type="text" id="lsBez" placeholder="Sparren" value="${val("bez", "")}" maxlength="80"></div></div>
+    <div class="row">
+      <div class="field"><label for="lsB">Breite (cm)</label><input type="text" id="lsB" inputmode="decimal" placeholder="8" value="${val("b", "")}"></div>
+      <div class="field"><label for="lsH">Höhe (cm)</label><input type="text" id="lsH" inputmode="decimal" placeholder="18" value="${val("h", "")}"></div>
+      <div class="field"><label for="lsL">Länge (m)</label><input type="text" id="lsL" inputmode="decimal" placeholder="6,20" value="${val("l", "")}"></div>
+      <div class="field small"><label for="lsN">Stück</label><input type="number" id="lsN" inputmode="numeric" min="1" step="1" value="${val("n", "1")}"></div>
+    </div>
+    <button type="submit" class="btn-add">${lsIco.plus}<span>${ed ? "Änderung speichern" : "Hinzufügen"}</span></button>
+    ${ed ? `<button type="button" class="btn-cancel" style="display:block" data-ls="editAbbruch">Ändern abbrechen</button>` : ""}
+  </form>`;
+  const pos = pr.pos || [];
+  if(pos.length){
+    h += `<div class="list-head"><h2>Positionen</h2>
+      <label class="ls-hide"><input type="checkbox" id="lsHideChk" ${lsHide ? "checked" : ""}> Erledigte ausblenden</label></div>`;
+    const sicht = pos.filter(p => !(lsHide && p.done));
+    h += `<div class="ls-items">` + sicht.map(p => {
+      const nr = pos.indexOf(p) + 1;
+      const fehlt = !(isFinite(p.b) && isFinite(p.h) && isFinite(p.l));
+      return `<div class="card item ls-row${p.done ? " done" : ""}${lsEditPos === p.id ? " active" : ""}">
+        <button type="button" class="ls-chk${p.done ? " on" : ""}" data-ls-done="${p.id}" role="checkbox" aria-checked="${p.done ? "true" : "false"}" aria-label="${escapeHtml(p.bez || "Position " + nr)} erledigt"><span>${p.done ? lsIco.check : ""}</span></button>
+        <div class="info">
+          <div class="fm">${escapeHtml(p.bez || "Position " + nr)} <span class="mult">· ${p.n || 1} Stück</span></div>
+          <div class="meta">${lsCm(p.b)}/${lsCm(p.h)} cm · ${isFinite(p.l) ? fmt(p.l, 2) : "?"} m · ${fmt(lsM3(p))} m³${fehlt ? ' · <b class="ls-warn">Maß fehlt</b>' : ""}</div>
+        </div>
+        <button type="button" class="icon-btn edit" data-ls-zopf="${p.id}" aria-label="Im Kantholz-Rechner prüfen" title="Nötigen Zopf-Ø im Kantholz-Rechner zeigen">${lsIco.zopf}</button>
+        <button type="button" class="icon-btn edit" data-ls-edit="${p.id}" aria-label="Ändern">${lsIco.edit}</button>
+        <button type="button" class="icon-btn del" data-ls-del="${p.id}" aria-label="Löschen">${lsIco.del}</button>
+      </div>`;
+    }).join("") + `</div>`;
+    if(lsHide && sicht.length < pos.length) h += `<p class="ls-hinweis">${pos.length - sicht.length} erledigte Position${pos.length - sicht.length === 1 ? "" : "en"} ausgeblendet.</p>`;
+    h += `<button type="button" class="btn-pdf" data-ls="pdf">${lsIco.pdf}${IST_NATIVE ? "PDF erstellen und teilen" : "Als PDF herunterladen"}</button>`;
+  }else{
+    h += `<div class="card empty">Noch keine Positionen. Oben eintragen oder mit „Einlesen“ aus einer Datei übernehmen.</div>`;
+  }
+  return h;
+}
+
+/* Klicks im Bereich Holzliste */
+document.addEventListener("click", (e) => {
+  const v = $("lsView");
+  if(!v || !v.contains(e.target)) return;
+  const t = e.target.closest("[data-ls],[data-ls-open],[data-ls-done],[data-ls-edit],[data-ls-del],[data-ls-zopf]");
+  if(!t) return;
+  const pr = lsProj();
+  if(t.dataset.lsOpen){ lsOpen = t.dataset.lsOpen; lsEditPos = null; savePrefs(); lsRender(); window.scrollTo({top: 0}); return; }
+  if(t.dataset.lsDone && pr){
+    const p = pr.pos.find(x => x.id === t.dataset.lsDone); if(!p) return;
+    p.done = !p.done; p.doneAt = p.done ? new Date().toISOString() : null;
+    lsSpeichern(); lsRender(); return;
+  }
+  if(t.dataset.lsEdit && pr){ lsEditPos = t.dataset.lsEdit; lsRender(); const f = $("lsForm"); if(f) f.scrollIntoView({behavior: "smooth", block: "start"}); return; }
+  if(t.dataset.lsDel && pr){
+    const p = pr.pos.find(x => x.id === t.dataset.lsDel); if(!p) return;
+    if(!confirm(`Position „${p.bez || "ohne Namen"}“ löschen?`)) return;
+    pr.pos = pr.pos.filter(x => x !== p); if(lsEditPos === p.id) lsEditPos = null;
+    lsSpeichern(); lsRender(); return;
+  }
+  if(t.dataset.lsZopf && pr){
+    const p = pr.pos.find(x => x.id === t.dataset.lsZopf); if(!p) return;
+    if(!(isFinite(p.b) && isFinite(p.h))){ alert("Für diese Position fehlt der Querschnitt."); return; }
+    els.zB.value = lsCm(p.b); els.zH.value = lsCm(p.h); els.zN.value = 1; zMode = "q";
+    showTab("kant"); savePrefs(); renderZopf(); window.scrollTo({top: 0}); return;
+  }
+  switch(t.dataset.ls){
+    case "neu": {
+      const n = prompt("Name des Projekts (z. B. Dachstuhl Müller):", "");
+      if(n == null) return;
+      const pr2 = {id: lsNeueId(), name: n.trim().slice(0, 80) || "Neues Projekt", angelegt: new Date().toISOString(), pos: []};
+      listen.unshift(pr2); lsOpen = pr2.id; lsEditPos = null; lsSpeichern(); savePrefs(); lsRender(); window.scrollTo({top: 0});
+      setTimeout(() => { const b = $("lsBez"); if(b) b.focus(); }, 50);
+      return;
+    }
+    case "zurueck": lsOpen = null; lsEditPos = null; savePrefs(); lsRender(); window.scrollTo({top: 0}); return;
+    case "umbenennen": {
+      if(!pr) return;
+      const n = prompt("Neuer Name:", pr.name); if(n == null || !n.trim()) return;
+      pr.name = n.trim().slice(0, 80); lsSpeichern(); lsRender(); return;
+    }
+    case "projLoeschen": {
+      if(!pr) return;
+      if(!confirm(`Projekt „${pr.name}“ mit ${pr.pos.length} Positionen löschen? Das lässt sich nicht rückgängig machen.`)) return;
+      listen = listen.filter(x => x !== pr); lsOpen = null; lsEditPos = null; lsSpeichern(); savePrefs(); lsRender(); return;
+    }
+    case "editAbbruch": lsEditPos = null; lsRender(); return;
+    case "import": $("lsFile").click(); return;
+    case "foto": $("lsCam").click(); return;
+    case "pdf": if(pr) lsPdf(pr); return;
+  }
+});
+document.addEventListener("change", (e) => {
+  if(e.target && e.target.id === "lsHideChk"){ lsHide = e.target.checked; savePrefs(); lsRender(); }
+});
+document.addEventListener("submit", (e) => {
+  if(!e.target || e.target.id !== "lsForm") return;
+  e.preventDefault();
+  const pr = lsProj(); if(!pr) return;
+  const bez = $("lsBez").value.trim().slice(0, 80), b = num($("lsB").value), h = num($("lsH").value), l = num($("lsL").value);
+  const n = Math.max(1, Math.round(num($("lsN").value) || 1));
+  if(!(b > 0 && b <= 200) || !(h > 0 && h <= 200)){ alert("Bitte Breite und Höhe in cm eintragen (z. B. 8 und 18)."); return; }
+  if(!(l > 0 && l <= 60)){ alert("Bitte die Länge in Metern eintragen (z. B. 6,20)."); return; }
+  if(lsEditPos){
+    const p = pr.pos.find(x => x.id === lsEditPos);
+    if(p) Object.assign(p, {bez, b, h, l, n});
+    lsEditPos = null;
+  }else pr.pos.push({id: lsNeueId(), bez, b, h, l, n, done: false});
+  lsSpeichern(); lsRender();
+  const f = $("lsBez"); if(f && !lsEditPos){ f.focus(); }
+});
+
+/* --- PDF der Holzliste (zum Abhaken in der Werkstatt) --- */
+function lsPdf(pr){
+  const pos = pr.pos || [], s = lsSumme(pr);
+  if(!pos.length){ alert("Die Liste ist noch leer."); return; }
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("de-DE", {day: "2-digit", month: "2-digit", year: "numeric"});
+  const iso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const dateiname = ("Holzliste " + pr.name + " " + iso).replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim() + ".pdf";
+  if(IST_NATIVE){
+    (async () => {
+      const J = window.jspdf && window.jspdf.jsPDF;
+      if(!J) throw new Error("PDF-Baustein fehlt");
+      const doc = new J({unit: "mm", format: "a4", compress: true});
+      for(const m of ["text", "splitTextToSize", "getTextWidth"]){
+        const orig = doc[m];
+        doc[m] = function(tx, ...rest){ const an = v => typeof v === "string" ? pdfText(v) : Array.isArray(v) ? v.map(an) : v; return orig.call(this, an(tx), ...rest); };
+      }
+      const L = 16, R = 194, GRUEN = [15, 110, 86], GRAU = [120, 120, 120];
+      let y = 20;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(...GRUEN); doc.text(appName, L, y);
+      y += 3; doc.setDrawColor(...GRUEN); doc.setLineWidth(0.6); doc.line(L, y, R, y); y += 8;
+      doc.setTextColor(0, 0, 0); doc.setFontSize(13); doc.text("Holzliste: " + pr.name, L, y);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...GRAU); doc.text(dateStr, R, y, {align: "right"});
+      y += 5;
+      const body = pos.map((p, i) => ["", String(i + 1), p.bez || "", lsCm(p.b) + "/" + lsCm(p.h), isFinite(p.l) ? fmt(p.l, 2) : "?", String(p.n || 1), fmt(lsM3(p))]);
+      const rechts = {1: {halign: "right"}, 4: {halign: "right"}, 5: {halign: "right"}, 6: {halign: "right"}};
+      doc.autoTable({
+        startY: y, head: [["", "Nr", "Bezeichnung", "B/H (cm)", "Länge (m)", "Stück", "m³"]], body, theme: "plain", margin: {left: L, right: 210 - R},
+        styles: {font: "helvetica", fontSize: 9.5, cellPadding: 1.8, textColor: [0, 0, 0], lineColor: [204, 204, 204]},
+        headStyles: {fontStyle: "bold", lineWidth: {bottom: 0.5}, lineColor: [51, 51, 51]},
+        bodyStyles: {lineWidth: {bottom: 0.15}}, columnStyles: Object.assign({0: {cellWidth: 9}}, rechts),
+        didParseCell: (d) => { if(d.section === "head" && rechts[d.column.index]) d.cell.styles.halign = "right"; if(d.section === "body" && pos[d.row.index].done) d.cell.styles.textColor = [130, 130, 130]; },
+        didDrawCell: (d) => {
+          if(d.section !== "body" || d.column.index !== 0) return;
+          const k = 4, x = d.cell.x + 2, yy = d.cell.y + (d.cell.height - k) / 2;
+          doc.setDrawColor(...GRUEN); doc.setLineWidth(0.35); doc.rect(x, yy, k, k);
+          if(pos[d.row.index].done){ doc.setLineWidth(0.6); doc.line(x + 0.8, yy + 2.1, x + 1.7, yy + 3.2); doc.line(x + 1.7, yy + 3.2, x + 3.4, yy + 0.8); }
+        },
+      });
+      y = doc.lastAutoTable.finalY + 8; if(y > 265){ doc.addPage(); y = 20; }
+      doc.setFontSize(10.5); doc.setTextColor(0, 0, 0);
+      [["Positionen", `${s.anz} (${s.fertig} erledigt)`], ["Stück", `${s.stk} (${s.stkf} fertig)`], ["Holz gesamt", fmt(s.m3) + " m³"], ["Davon noch offen", fmt(s.offen) + " m³"]]
+        .forEach(([a, b]) => { doc.text(a, L + 90, y); doc.text(b, R, y, {align: "right"}); y += 5.5; });
+      y += 4; doc.setFontSize(7.5); doc.setTextColor(...GRAU);
+      doc.text("m³ = Breite × Höhe × Länge × Stück (ohne Verschnitt) · erstellt mit " + appName, L, y);
+      await nativDateiTeilen(doc.output("blob"), dateiname);
+    })().catch(e => alert("PDF konnte nicht erstellt werden: " + (e && e.message ? e.message : e)));
+    return;
+  }
+  const rows = pos.map((p, i) => `<tr${p.done ? ' style="color:#888"' : ""}><td style="font-size:14px">${p.done ? "☑" : "☐"}</td><td class="r">${i + 1}</td><td>${escapeHtml(p.bez || "")}</td><td class="r">${lsCm(p.b)}/${lsCm(p.h)}</td><td class="r">${isFinite(p.l) ? fmt(p.l, 2) : "?"}</td><td class="r">${p.n || 1}</td><td class="r">${fmt(lsM3(p))}</td></tr>`).join("");
+  els.printArea.innerHTML = `<div class="p-brand">${escapeHtml(appName)}</div><hr class="p-rule">
+    <div class="p-headline"><span class="p-sub"><b>Holzliste: ${escapeHtml(pr.name)}</b></span><span class="p-date">${dateStr}</span></div>
+    <table><thead><tr><th></th><th class="r">Nr</th><th>Bezeichnung</th><th class="r">B/H&nbsp;(cm)</th><th class="r">Länge&nbsp;(m)</th><th class="r">Stück</th><th class="r">m³</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="p-tot">
+      <div class="pt-row"><span>Positionen</span><span>${s.anz} (${s.fertig} erledigt)</span></div>
+      <div class="pt-row"><span>Stück</span><span>${s.stk} (${s.stkf} fertig)</span></div>
+      <div class="pt-row"><span>Holz gesamt</span><span>${fmt(s.m3)} m³</span></div>
+      <div class="pt-row grand"><span>Davon noch offen</span><span>${fmt(s.offen)} m³</span></div>
+    </div>
+    <div class="p-foot">m³ = Breite × Höhe × Länge × Stück (ohne Verschnitt) · erstellt mit ${escapeHtml(appName)}</div>`;
+  const prevTitle = document.title;
+  document.title = dateiname.replace(/\.pdf$/, "");
+  const restore = () => { document.title = prevTitle; window.removeEventListener("afterprint", restore); };
+  window.addEventListener("afterprint", restore);
+  window.print();
+  setTimeout(restore, 3000);
+}
+
+/* --- Einlesen --- */
+const lsOv = {el: $("lsOv"), body: $("lsOvBody")};
+let lsRev = null;              // Prüf-Ansicht: {pos, secU, lenU, name, quelle, ocr, ziel}
+let lsAbbruch = false;
+let lsOcrWorker = null;
+function lsOvAuf(){ lsOv.el.classList.add("open"); document.body.style.overflow = "hidden"; }
+function lsOvZu(){
+  lsAbbruch = true; lsOv.el.classList.remove("open"); document.body.style.overflow = ""; lsRev = null;
+  if(lsOcrWorker){ const w = lsOcrWorker; lsOcrWorker = null; w.terminate().catch(() => {}); }
+}
+$("lsOvClose").addEventListener("click", lsOvZu);
+function lsStatus(text, anteil){
+  lsOv.body.innerHTML = `<div class="ls-lade"><div class="ls-spin" aria-hidden="true"></div><p>${escapeHtml(text)}</p>
+    ${anteil != null ? `<div class="ls-bar"><i style="width:${Math.round(anteil * 100)}%"></i></div>` : ""}
+    <button type="button" class="btn-cancel" style="display:block" id="lsStop">Abbrechen</button></div>`;
+  $("lsStop").onclick = lsOvZu;
+}
+const lsSkript = (src) => new Promise((ok, err) => {
+  if(document.querySelector(`script[data-src="${src}"]`)) return ok();
+  const s = document.createElement("script"); s.src = src; s.dataset.src = src; s.onload = ok; s.onerror = () => err(new Error("Baustein fehlt: " + src)); document.head.appendChild(s);
+});
+let lsPdfjs = null;
+async function lsPdfBaustein(){
+  if(lsPdfjs) return lsPdfjs;
+  const m = await import(new URL("libs/pdfjs/pdf.min.mjs", document.baseURI).href);
+  m.GlobalWorkerOptions.workerSrc = new URL("libs/pdfjs/pdf.worker.min.mjs", document.baseURI).href;
+  return lsPdfjs = m;
+}
+async function lsOcrBaustein(fortschritt){
+  await lsSkript("libs/tesseract/tesseract.min.js");
+  if(lsOcrWorker) return lsOcrWorker;
+  const basis = new URL("libs/tesseract/", document.baseURI).href;
+  /* Sprachdatei liegt ungepackt bei: Android entfernt beim Bauen die Endung „.gz“ aus dem App-Paket */
+  let fehler = null;
+  const w = await Promise.race([
+    Tesseract.createWorker("deu", 1, {
+      workerPath: basis + "worker.min.js", corePath: basis + "core", langPath: basis + "lang", gzip: false,
+      workerBlobURL: false, cacheMethod: "none",
+      logger: (m) => { if(m && m.status === "recognizing text" && fortschritt) fortschritt(m.progress); },
+      errorHandler: (e) => { fehler = e; },
+    }),
+    new Promise((_, nein) => { const t0 = Date.now(); const iv = setInterval(() => {
+      if(fehler || Date.now() - t0 > 60000){ clearInterval(iv); nein(new Error("Die Texterkennung konnte nicht starten" + (fehler ? ": " + (fehler.message || fehler) : " (Zeitüberschreitung)."))); }
+      if(lsOcrWorker || lsAbbruch) clearInterval(iv);
+    }, 300); }),
+  ]);
+  await w.setParameters({tessedit_pageseg_mode: "6", preserve_interword_spaces: "1"});
+  return lsOcrWorker = w;
+}
+/* Foto aufbereiten: auf gut lesbare Größe bringen, Grau, Kontrast strecken, leicht schärfen */
+async function lsBildAufbereiten(quelle){
+  const img = await new Promise((ok, err) => {
+    if(quelle instanceof HTMLCanvasElement) return ok(quelle);
+    const i = new Image(); const u = URL.createObjectURL(quelle);
+    i.onload = () => { URL.revokeObjectURL(u); ok(i); }; i.onerror = () => { URL.revokeObjectURL(u); err(new Error("Das Bild konnte nicht geöffnet werden.")); }; i.src = u;
+  });
+  const w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height;
+  const lang = Math.max(w0, h0);
+  const f = lang < 2400 ? Math.min(2, 2400 / lang) : lang > 3600 ? 3600 / lang : 1;
+  const W = Math.round(w0 * f), H = Math.round(h0 * f);
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d", {willReadFrequently: true});
+  x.imageSmoothingQuality = "high"; x.drawImage(img, 0, 0, W, H);
+  const d = x.getImageData(0, 0, W, H), p = d.data, g = new Uint8ClampedArray(W * H), hist = new Uint32Array(256);
+  for(let i = 0, j = 0; i < p.length; i += 4, j++){ const v = (p[i] * 77 + p[i + 1] * 150 + p[i + 2] * 29) >> 8; g[j] = v; hist[v]++; }
+  let lo = 0, hi = 255, acc = 0; const cut = W * H * 0.01;
+  for(; lo < 255; lo++){ acc += hist[lo]; if(acc > cut) break; }
+  acc = 0; for(; hi > 0; hi--){ acc += hist[hi]; if(acc > cut) break; }
+  const sp = Math.max(1, hi - lo);
+  for(let j = 0; j < g.length; j++) g[j] = Math.max(0, Math.min(255, (g[j] - lo) * 255 / sp));
+  for(let yy = 0; yy < H; yy++) for(let xx = 0; xx < W; xx++){
+    const j = yy * W + xx, i = j * 4;
+    let v = g[j];
+    if(xx > 0 && yy > 0 && xx < W - 1 && yy < H - 1) v = v * 2 - (g[j - 1] + g[j + 1] + g[j - W] + g[j + W]) / 4;
+    v = Math.max(0, Math.min(255, v)); p[i] = p[i + 1] = p[i + 2] = v; p[i + 3] = 255;
+  }
+  x.putImageData(d, 0, 0);
+  return c;
+}
+async function lsOcr(bild, text){
+  lsStatus(text + " Texterkennung wird vorbereitet …", 0);
+  const w = await lsOcrBaustein((a) => { if(!lsAbbruch) lsStatus(text + " Texterkennung läuft …", a); });
+  const c = await lsBildAufbereiten(bild);
+  if(lsAbbruch) return [];
+  const r = await w.recognize(c);
+  return LP.ocrZeilen(r.data);
+}
+async function lsDateiLesen(f){
+  const name = f.name || "Liste", endung = (name.match(/\.([a-z0-9]+)$/i) || [])[1] || "";
+  const typ = (f.type || "").toLowerCase(), e = endung.toLowerCase();
+  const text = async () => { const b = await f.arrayBuffer(); try{ return new TextDecoder("utf-8", {fatal: true}).decode(b); }catch(_){ return new TextDecoder("windows-1252").decode(b); } };
+  if(e === "pdf" || typ === "application/pdf"){
+    lsStatus("PDF wird gelesen …");
+    const pdfjs = await lsPdfBaustein();
+    const doc = await pdfjs.getDocument({data: new Uint8Array(await f.arrayBuffer()), isEvalSupported: false, useSystemFonts: true, disableFontFace: true}).promise;
+    const seiten = Math.min(doc.numPages, 30);
+    let zeilen = [], ocr = false;
+    for(let s = 1; s <= seiten; s++){
+      if(lsAbbruch) return null;
+      lsStatus(`PDF wird gelesen … Seite ${s} von ${seiten}`, (s - 1) / seiten);
+      const pg = await doc.getPage(s), vp = pg.getViewport({scale: 1}), tc = await pg.getTextContent();
+      const st = tc.items.filter(it => it.str != null && it.str.trim()).map(it => ({t: it.str, x0: it.transform[4], x1: it.transform[4] + it.width, y: vp.height - it.transform[5], hgt: Math.abs(it.transform[3]) || it.height}));
+      if(st.reduce((n, it) => n + it.t.length, 0) >= 25){ zeilen.push(...LP.zuZeilen(st)); continue; }
+      /* eingescannte Seite (nur Bild) → Seite als Bild zeichnen und Texterkennung */
+      ocr = true;
+      const skal = Math.min(3, 2600 / Math.max(vp.width, vp.height));
+      const v2 = pg.getViewport({scale: skal}), c = document.createElement("canvas");
+      c.width = Math.round(v2.width); c.height = Math.round(v2.height);
+      await pg.render({canvasContext: c.getContext("2d"), viewport: v2}).promise;
+      zeilen.push(...await lsOcr(c, `Seite ${s} von ${seiten}:`));
+    }
+    return {erg: LP.lies(zeilen, {ocr}), ocr, quelle: name, zeilen};
+  }
+  if(typ.startsWith("image/") || /^(jpe?g|png|heic|heif|webp|gif|bmp|tiff?)$/.test(e)){
+    const zeilen = await lsOcr(f, "");
+    return {erg: LP.lies(zeilen, {ocr: true}), ocr: true, quelle: name, zeilen};
+  }
+  if(e === "xlsx" || typ.includes("spreadsheetml")){
+    lsStatus("Excel-Datei wird gelesen …");
+    const zeilen = await LP.xlsxZeilen(await f.arrayBuffer(), DOMParser);
+    return {erg: LP.lies(zeilen), ocr: false, quelle: name, zeilen};
+  }
+  if(e === "xls") throw new Error("Alte Excel-Dateien (.xls) kann die App nicht lesen. Bitte in Excel als .xlsx oder CSV speichern.");
+  if(/^(xml|btlx)$/.test(e) || typ.includes("xml")){
+    lsStatus("XML wird gelesen …");
+    const doc = new DOMParser().parseFromString(await text(), "text/xml");
+    if(doc.getElementsByTagName("parsererror").length) throw new Error("Die XML-Datei ist beschädigt oder unvollständig.");
+    const x = LP.xmlZeilen(doc);
+    const erg = LP.lies(x.zeilen);
+    const pn = doc.documentElement.getAttribute("Projekt") || ((doc.getElementsByTagName("Project")[0] || {getAttribute: () => ""}).getAttribute("Name"));
+    if(!erg.name && pn) erg.name = pn;
+    return {erg, ocr: false, quelle: name, zeilen: x.zeilen};
+  }
+  lsStatus("Datei wird gelesen …");
+  const zeilen = LP.csvZeilen(await text());
+  return {erg: LP.lies(zeilen), ocr: false, quelle: name, zeilen};
+}
+/* iPhone/iPad: Mit Dateitypen-Filter wären unbekannte Endungen (z. B. .btlx) grau – dort ohne Filter, die App prüft selbst */
+if(/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) || (IST_NATIVE && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === "ios")) $("lsFile").removeAttribute("accept");
+$("lsCam").addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if(f) lsEinlesen(f); });
+$("lsFile").addEventListener("change", async (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(f) lsEinlesen(f);
+});
+async function lsEinlesen(f){
+  if(f.size > 40 * 1024 * 1024){ alert("Die Datei ist zu groß (über 40 MB)."); return; }
+  lsAbbruch = false; lsOvAuf();
+  try{
+    const r = await lsDateiLesen(f);
+    if(!r || lsAbbruch) return;
+    const ziel = lsProj() ? lsOpen : "neu";
+    const ausName = r.ocr && /^(img|image|photo|foto|bild|dsc|pxl|scan|camera|kamera)?[\s_-]*[\d_-]+$|^image$/i.test(r.quelle.replace(/\.[a-z0-9]+$/i, ""))
+      ? "Holzliste " + new Date().toLocaleDateString("de-DE", {day: "2-digit", month: "2-digit", year: "numeric"})
+      : r.quelle.replace(/\.[a-z0-9]+$/i, "").replace(/[_]+/g, " ").trim();
+    lsRev = {pos: r.erg.pos.map(p => Object.assign({use: true}, p)), secU: r.erg.secU, lenU: r.erg.lenU,
+             name: r.erg.name || ausName, quelle: r.quelle, ocr: r.ocr, ziel,
+             roh: r.zeilen.map(z => z.map(c => c.t).join("  ")).filter(Boolean).slice(0, 400)};
+    lsPruefRender();
+  }catch(err){
+    if(lsAbbruch) return;
+    lsOv.body.innerHTML = `<div class="card pad"><p><b>Die Datei konnte nicht gelesen werden.</b></p><p class="ls-hinweis">${escapeHtml(err && err.message ? err.message : String(err))}</p>
+      <button type="button" class="btn-pdf" id="lsErrZu">Schließen</button></div>`;
+    $("lsErrZu").onclick = lsOvZu;
+  }
+}
+const lsRoh = (v) => isFinite(v) ? String(+v.toFixed(4)).replace(".", ",") : "";
+function lsPruefen(p){
+  const fs_ = LP.FAKTOR_SEC[lsRev.secU], fl = LP.FAKTOR_LEN[lsRev.lenU];
+  const b = p.b * fs_, h = p.h * fs_, l = p.l * fl, w = [];
+  if(!(b > 0) || !(h > 0)) w.push("Querschnitt fehlt");
+  else if(b > 100 || h > 100 || b < 1 || h < 1) w.push("Querschnitt unplausibel – Einheit prüfen");
+  if(!(l > 0)) w.push("Länge fehlt");
+  else if(l > 30 || l < 0.05) w.push("Länge unplausibel – Einheit prüfen");
+  if(p.nUnsicher) w.push("Stückzahl prüfen");
+  return w;
+}
+function lsZeileWarnung(row){
+  const p = lsRev.pos[+row.dataset.i], w = p.use ? lsPruefen(p) : [];
+  row.classList.toggle("warn", w.length > 0);
+  let d = row.querySelector(".ls-warn");
+  if(!w.length){ if(d) d.remove(); return; }
+  if(!d){ d = document.createElement("div"); d.className = "ls-warn"; row.insertBefore(d, row.querySelector(".ls-src")); }
+  d.textContent = w.join(" · ");
+}
+function lsPruefRender(){
+  const r = lsRev;
+  const aktiv = r.pos.filter(p => p.use).length;
+  const zielOpt = `<option value="neu">Neues Projekt anlegen</option>` + listen.map(pr => `<option value="${pr.id}"${r.ziel === pr.id ? " selected" : ""}>Zu „${escapeHtml(pr.name)}“ hinzufügen</option>`).join("");
+  const sel = (id, wert, opts) => `<select id="${id}">${opts.map(o => `<option value="${o[0]}"${o[0] === wert ? " selected" : ""}>${o[1]}</option>`).join("")}</select>`;
+  let h = `<div class="ls-info${r.ocr ? " warn" : ""}">${r.pos.length ? `<b>${r.pos.length} Position${r.pos.length === 1 ? "" : "en"} erkannt</b> in „${escapeHtml(r.quelle)}“. Bitte jede Zeile mit der Vorlage vergleichen.` : `<b>Keine Balken erkannt</b> in „${escapeHtml(r.quelle)}“.`}
+    ${r.ocr ? (r.pos.length ? "<br>Aus Foto/Scan gelesen: Zahlen besonders genau prüfen (8 und 6, Komma, Schrägstrich)." : "<br>Tipp: Liste gerade von oben, hell und scharf fotografieren, ganz im Bild. Oder die Balken von Hand eintragen.") : (r.pos.length ? "" : "<br>Die Datei enthält keine erkennbare Holzliste mit Querschnitt und Länge. Du kannst die Zeilen auch von Hand ergänzen.")}</div>
+  <div class="card pad mb">
+    <div class="row"><div class="field"><label for="lsRevZiel">Übernehmen in</label><select id="lsRevZiel">${zielOpt}</select></div></div>
+    <div class="row" id="lsRevNameRow"${r.ziel !== "neu" ? ' style="display:none"' : ""}><div class="field"><label for="lsRevName">Projektname</label><input type="text" id="lsRevName" value="${escapeHtml(r.name)}" maxlength="80"></div></div>
+    <div class="row">
+      <div class="field"><label for="lsRevSec">Breite/Höhe stehen in</label>${sel("lsRevSec", r.secU, [["cm", "cm"], ["mm", "mm"], ["m", "m"]])}</div>
+      <div class="field"><label for="lsRevLen">Länge steht in</label>${sel("lsRevLen", r.lenU, [["m", "m"], ["cm", "cm"], ["mm", "mm"]])}</div>
+    </div>
+  </div>`;
+  h += `<div class="ls-rev">` + r.pos.map((p, i) => {
+    const w = lsPruefen(p);
+    return `<div class="card ls-revrow${p.use ? "" : " aus"}${w.length && p.use ? " warn" : ""}" data-i="${i}">
+      <div class="ls-revtop"><label class="ls-use"><input type="checkbox" data-f="use" ${p.use ? "checked" : ""}> übernehmen</label>
+        <input type="text" data-f="bez" value="${escapeHtml(p.bez)}" placeholder="Bezeichnung" aria-label="Bezeichnung"></div>
+      <div class="ls-revnum">
+        <label>B (${r.secU})<input type="text" inputmode="decimal" data-f="b" value="${lsRoh(p.b)}"></label>
+        <label>H (${r.secU})<input type="text" inputmode="decimal" data-f="h" value="${lsRoh(p.h)}"></label>
+        <label>L (${r.lenU})<input type="text" inputmode="decimal" data-f="l" value="${lsRoh(p.l)}"></label>
+        <label>Stück<input type="text" inputmode="numeric" data-f="n" value="${p.n}"></label>
+      </div>
+      ${w.length && p.use ? `<div class="ls-warn">${w.join(" · ")}</div>` : ""}
+      <div class="ls-src">gelesen: ${escapeHtml(p.src)}</div>
+    </div>`;
+  }).join("") + `</div>`;
+  h += `<button type="button" class="btn-measure" id="lsRevPlus" style="margin-top:10px">${lsIco.plus}Zeile hinzufügen</button>`;
+  if(r.roh && r.roh.length) h += `<details class="ls-roh"><summary>Gelesenen Text anzeigen</summary><pre>${escapeHtml(r.roh.join("\n"))}</pre></details>`;
+  h += `<button type="button" class="btn-add" id="lsRevOk">${lsIco.check}${aktiv ? `${aktiv} Position${aktiv === 1 ? "" : "en"} übernehmen` : r.ziel === "neu" ? "Leeres Projekt anlegen" : "Nichts übernehmen"}</button>
+        <button type="button" class="btn-cancel" style="display:block" id="lsRevAbbr">Abbrechen</button>`;
+  lsOv.body.innerHTML = h;
+}
+lsOv.body.addEventListener("input", (e) => {
+  if(!lsRev) return;
+  const t = e.target, row = t.closest(".ls-revrow");
+  if(t.id === "lsRevName"){ lsRev.name = t.value; return; }
+  if(!row || !t.dataset.f || t.type === "checkbox") return;
+  const p = lsRev.pos[+row.dataset.i], f = t.dataset.f;
+  if(f === "bez") p.bez = t.value;
+  else if(f === "n"){ const v = parseInt(t.value, 10); p.n = v > 0 ? v : NaN; p.nUnsicher = false; }
+  else p[f] = num(t.value);
+});
+lsOv.body.addEventListener("change", (e) => {
+  if(!lsRev) return;
+  const t = e.target, row = t.closest(".ls-revrow");
+  if(t.id === "lsRevZiel"){ lsRev.ziel = t.value; $("lsRevNameRow").style.display = t.value === "neu" ? "" : "none"; return; }
+  if(t.id === "lsRevSec"){ lsRev.secU = t.value; lsPruefRender(); return; }
+  if(t.id === "lsRevLen"){ lsRev.lenU = t.value; lsPruefRender(); return; }
+  if(row && t.dataset.f === "use"){ lsRev.pos[+row.dataset.i].use = t.checked; lsPruefRender(); return; }
+  if(row && t.dataset.f) lsZeileWarnung(row);       // nur diese Zeile neu prüfen (Fokus bleibt im nächsten Feld)
+});
+lsOv.body.addEventListener("click", (e) => {
+  if(!lsRev) return;
+  const t = e.target.closest("button"); if(!t) return;
+  if(t.id === "lsRevAbbr"){ lsOvZu(); return; }
+  if(t.id === "lsRevPlus"){ lsRev.pos.push({use: true, bez: "", b: NaN, h: NaN, l: NaN, n: 1, src: "von Hand ergänzt"}); lsPruefRender(); const r = lsOv.body.querySelectorAll(".ls-revrow"); if(r.length) r[r.length - 1].scrollIntoView({block: "center"}); return; }
+  if(t.id === "lsRevOk"){
+    const fs_ = LP.FAKTOR_SEC[lsRev.secU], fl = LP.FAKTOR_LEN[lsRev.lenU];
+    const nimm = lsRev.pos.filter(p => p.use);
+    const schlecht = nimm.map((p, i) => ({p, i, w: lsPruefen(p).filter(x => !/Stückzahl/.test(x))})).filter(x => x.w.length);
+    const fehlt = schlecht.filter(x => x.w.some(w => /fehlt/.test(w)));
+    if(fehlt.length){ alert(`Bei ${fehlt.length} Zeile${fehlt.length === 1 ? "" : "n"} fehlt ein Maß. Bitte eintragen oder „übernehmen“ abwählen.`); const el = lsOv.body.querySelector(".ls-revrow.warn"); if(el) el.scrollIntoView({block: "center"}); return; }
+    if(schlecht.length && !confirm(`${schlecht.length} Zeile${schlecht.length === 1 ? " hat" : "n haben"} ungewöhnliche Maße (z. B. falsche Einheit). Trotzdem übernehmen?`)) return;
+    let pr;
+    if(lsRev.ziel === "neu"){
+      pr = {id: lsNeueId(), name: (lsRev.name || "").trim().slice(0, 80) || "Eingelesene Liste", angelegt: new Date().toISOString(), quelle: lsRev.quelle, pos: []};
+      listen.unshift(pr);
+    }else pr = listen.find(x => x.id === lsRev.ziel);
+    if(!pr){ alert("Das Projekt gibt es nicht mehr."); return; }
+    for(const p of nimm) pr.pos.push({id: lsNeueId(), bez: (p.bez || "").trim().slice(0, 80), b: +(p.b * fs_).toFixed(2), h: +(p.h * fs_).toFixed(2), l: +(p.l * fl).toFixed(3), n: p.n > 0 ? p.n : 1, done: false});
+    lsOpen = pr.id; lsEditPos = null; lsSpeichern(); savePrefs();
+    lsOvZu(); showTab("liste"); savePrefs(); lsRender(); window.scrollTo({top: 0});
+  }
+});
+
 /* Android: Zurück-Taste schließt zuerst die Foto-Messung, sonst geht die App in den Hintergrund */
 if(nativPlugin("App")){
   nativPlugin("App").addListener("backButton", ()=>{
     const ov = document.getElementById("camOverlay");
     if(ov && getComputedStyle(ov).display !== "none"){ const c = document.getElementById("camClose"); if(c) c.click(); return; }
+    if(document.getElementById("lsOv").classList.contains("open")){ lsOvZu(); return; }
+    if(curTab === "liste" && lsOpen){ lsOpen = null; lsEditPos = null; savePrefs(); lsRender(); return; }
     nativPlugin("App").minimizeApp();
   });
 }
@@ -2023,6 +3009,7 @@ fillZopfSelects();
 loadPrefs();
 showTab(curTab);
 render();
+lsRender();
 
 /* Home-Screen: echtes PNG als iOS-Kachel setzen + Service Worker registrieren
    (Service Worker geht nur, wenn die Seite per http(s) ausgeliefert wird – bei
