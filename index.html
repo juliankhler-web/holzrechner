@@ -645,7 +645,7 @@
 <p class="footnote">
   Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
   Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
-  <b>Version 1.5</b> · 18.11.2026
+  <b>Version 1.6</b> · 18.11.2026
 </p>
 
 <div class="statusfill" aria-hidden="true"></div>
@@ -2859,7 +2859,28 @@ async function lsDateiLesen(f){
   const name = f.name || "Liste", endung = (name.match(/\.([a-z0-9]+)$/i) || [])[1] || "";
   const typ = (f.type || "").toLowerCase(), e = endung.toLowerCase();
   const text = async () => { const b = await f.arrayBuffer(); try{ return new TextDecoder("utf-8", {fatal: true}).decode(b); }catch(_){ return new TextDecoder("windows-1252").decode(b); } };
-  if(e === "pdf" || typ === "application/pdf"){
+  /* Dateianfang prüfen statt nur der Endung (Handys hängen z. B. „.zip“ an): ZIP = Excel oder cadwork, sonst Binärdatei abweisen */
+  const kopfBytes = new Uint8Array(await f.slice(0, 4096).arrayBuffer());
+  const istZip = kopfBytes[0] === 0x50 && kopfBytes[1] === 0x4B;
+  const istPdf = kopfBytes[0] === 0x25 && kopfBytes[1] === 0x50 && kopfBytes[2] === 0x44 && kopfBytes[3] === 0x46;
+  const istBild = (kopfBytes[0] === 0xFF && kopfBytes[1] === 0xD8) || (kopfBytes[0] === 0x89 && kopfBytes[1] === 0x50) || typ.startsWith("image/") || /^(jpe?g|png|heic|heif|webp|gif|bmp|tiff?)$/.test(e);
+  const CADWORK = "Das ist eine cadwork-Projektdatei, darin steckt das ganze 3D-Modell und keine fertige Liste. Bitte in cadwork die Stückliste als PDF ausgeben (oder als Excel/CSV) und diese Datei einlesen.";
+  if(istZip){
+    const namen = new TextDecoder("latin1").decode(new Uint8Array(await f.arrayBuffer()).subarray(0, Math.min(f.size, 4 * 1024 * 1024)));
+    if(/CONTENT_3D\.FDB|\.cwlm|\.3d\b/i.test(namen) || /^(cwlm|cwp|cwps|3d)$/.test(e) || /\.cwlm\./i.test(name)) throw new Error(CADWORK);
+    if(/xl\/worksheets\//.test(namen)){
+      lsStatus("Excel-Datei wird gelesen …");
+      const zeilen = await LP.xlsxZeilen(await f.arrayBuffer(), DOMParser);
+      return {erg: LP.lies(zeilen), ocr: false, quelle: name, zeilen};
+    }
+    throw new Error("Das ist eine gepackte Datei (ZIP). Bitte zuerst entpacken und dann die Liste (PDF, Excel, CSV oder XML) einlesen.");
+  }
+  if(!istPdf && !istBild){
+    let steuer = 0; const n = Math.min(kopfBytes.length, 4096);
+    for(let i = 0; i < n; i++){ const c = kopfBytes[i]; if(c === 0 || (c < 9) || (c > 13 && c < 32 && c !== 27)) steuer++; }
+    if(n && steuer / n > 0.02) throw new Error(/^(cwlm|cwp|cwps|3d|2dc|ivx)$/.test(e) || /\.cwlm/i.test(name) ? CADWORK : "Diese Datei kann Holzmeter nicht lesen. Möglich sind PDF, Foto, XML (auch BTLx), CSV, TXT und Excel (.xlsx).");
+  }
+  if(istPdf || e === "pdf" || typ === "application/pdf"){
     lsStatus("PDF wird gelesen …");
     const pdfjs = await lsPdfBaustein();
     const doc = await pdfjs.getDocument({data: new Uint8Array(await f.arrayBuffer()), isEvalSupported: false, useSystemFonts: true, disableFontFace: true}).promise;
