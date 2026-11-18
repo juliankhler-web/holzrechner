@@ -19,6 +19,7 @@
     --danger:#c0392b; --danger-soft:#fbeaea;
     --radius:14px;
     --safe-b:env(safe-area-inset-bottom,0px);
+    --gapb:0px;   /* Web-App am iPhone-Home-Bildschirm: fehlende Höhe unten (siehe iosLueckeUnten) */
   }
   @media (prefers-color-scheme: dark){
     :root{
@@ -72,6 +73,9 @@
   .tabbar{position:fixed; left:0; right:0; bottom:0; z-index:500; background:var(--card);
           border-top:1px solid var(--line); box-shadow:0 -2px 14px rgba(0,0,0,.07);
           padding:6px 8px calc(6px + var(--safe-b));}
+  .tabbar{bottom:calc(-1 * var(--gapb));}
+  /* Sicherheitsnetz: Fläche unter der Leiste immer in Leistenfarbe (falls iOS die Seite unten zu kurz berechnet) */
+  .tabbar::after{content:""; position:absolute; left:0; right:0; top:100%; height:120px; background:var(--card); pointer-events:none;}
   .tabbar .in{display:flex; gap:4px; max-width:560px; margin:0 auto;}
   .tabbar button{flex:1; min-width:0; border:none; background:none; font:inherit; color:var(--muted);
                  font-size:11px; line-height:1.15; display:flex; flex-direction:column; align-items:center;
@@ -185,7 +189,7 @@
   .btn-measure svg{width:17px; height:17px; fill:var(--muted);}
 
   /* Kamera-Messung (Vollbild-Overlay, immer dunkel) */
-  .cam-overlay{position:fixed; inset:0; background:#0d0d0d; z-index:1000; display:none; flex-direction:column; color:#fff;}
+  .cam-overlay{position:fixed; inset:0; bottom:calc(-1 * var(--gapb)); background:#0d0d0d; z-index:1000; display:none; flex-direction:column; color:#fff;}
   .cam-overlay.open{display:flex;}
   .cam-head{display:flex; align-items:center; justify-content:space-between;
             padding:14px; padding-top:calc(14px + env(safe-area-inset-top,0px)); border-bottom:1px solid #262626;}
@@ -249,7 +253,7 @@
   .ls-zwei .btn-pdf{margin-top:0; flex:1; min-width:0; font-size:14.5px; height:48px; gap:6px; padding:0 6px;}
   .ls-zwei .btn-pdf svg{flex:none; width:18px; height:18px;}
   /* Einlesen (Vollbild) */
-  .ls-ov{position:fixed; inset:0; background:var(--bg); z-index:1000; display:none; flex-direction:column;}
+  .ls-ov{position:fixed; inset:0; bottom:calc(-1 * var(--gapb)); background:var(--bg); z-index:1000; display:none; flex-direction:column;}
   .ls-ov.open{display:flex;}
   .ls-ovhead{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; padding-top:calc(12px + env(safe-area-inset-top,0px));
              border-bottom:1px solid var(--line); background:var(--card);}
@@ -638,7 +642,7 @@
 <p class="footnote">
   Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
   Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
-  <b>Version 1.4</b> · 18.11.2026
+  <b>Version 1.4</b> · 18.11.2026 · Web b
 </p>
 
 <div class="statusfill" aria-hidden="true"></div>
@@ -3004,6 +3008,20 @@ if(nativPlugin("App")){
     nativPlugin("App").minimizeApp();
   });
 }
+/* iPhone: Web-App vom Home-Bildschirm (neuere iOS-Versionen) berechnet die Seite um die Statusleisten-Höhe zu kurz →
+   unten blieb ein Streifen unter der Leiste. Fehlende Höhe messen und Leiste/Vollbild-Fenster bis zum Rand ziehen. */
+function iosLueckeUnten(){
+  try{
+    if(IST_NATIVE || navigator.standalone !== true) return;
+    const hoch = Math.max(screen.width, screen.height), quer = window.innerWidth > window.innerHeight;
+    const gap = quer ? 0 : Math.round(hoch - window.innerHeight);
+    document.documentElement.style.setProperty("--gapb", (gap > 0 && gap <= 90 ? gap : 0) + "px");
+  }catch(e){}
+}
+iosLueckeUnten();
+window.addEventListener("resize", () => { if(!document.body.classList.contains("kb")) iosLueckeUnten(); });
+window.addEventListener("orientationchange", () => setTimeout(iosLueckeUnten, 300));
+
 /* --- Start --- */
 fillZopfSelects();
 loadPrefs();
