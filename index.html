@@ -385,7 +385,7 @@
   </div>
   <div style="flex:1; min-width:0;">
     <h1 id="appTitle">Holzmeter</h1>
-    <p>Festmeter (Fm) berechnen</p>
+    <p id="appSub">Festmeter (Fm) berechnen</p>
   </div>
   <button type="button" class="rename-btn" id="infoBtn" aria-label="Info zu Holzmeter" title="Info">
     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 2a8 8 0 110 16 8 8 0 010-16zm-1 5h2V7h-2zm0 8h2v-6h-2z"/></svg>
@@ -654,7 +654,7 @@
 <div class="info-ov" id="infoOv" role="dialog" aria-modal="true" aria-labelledby="infoTitel">
   <div class="card info-box">
     <div class="info-kopf"><h3 id="infoTitel">Über Holzmeter</h3><button type="button" class="ls-ovzu" id="infoZu" aria-label="Schließen">×</button></div>
-    <p class="info-ver"><b>Version 1.7</b> · 18.11.2026</p>
+    <p class="info-ver"><b>Version 1.8</b> · 18.11.2026</p>
     <p class="info-txt">Festmeter nach der Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
       Rindenabzug in cm nach Baumart (RVR-Standard).<br>
       Kantholz: eigene Berechnung nach den Schnittklassen S, A, B und C, 3 mm Sägeschnitt.<br>
@@ -1913,8 +1913,11 @@ els.zModeD.addEventListener("click", ()=>{
   if(!els.zDia.value.trim()) els.zDia.focus();
 });
 /* --- Untere Leiste: Bereiche umschalten --- */
+const TAB_UNTERTITEL = {stamm: "Festmeter (Fm) berechnen", brenn: "Raummeter, Schüttraummeter und Gewicht",
+  kant: "Mindest-Zopf und passende Balken", liste: "Projekte abhaken und Listen einlesen", rech: "Preis, MwSt und PDF-Rechnung"};
 function showTab(t){
   curTab = TABS.includes(t) ? t : "stamm";
+  const sub = document.getElementById("appSub"); if(sub) sub.textContent = TAB_UNTERTITEL[curTab] || "";
   document.querySelectorAll("[data-tab]").forEach(el =>
     el.classList.toggle("tab-hide", !el.dataset.tab.split(" ").includes(curTab)));
   document.querySelectorAll("#tabbar button").forEach(b => {
