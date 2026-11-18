@@ -47,12 +47,13 @@
   .logo{width:40px; height:40px; border-radius:11px; background:linear-gradient(180deg,#22a57f,#0c5a46);
         display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .logo svg{width:32px; height:32px;}
-  header h1{font-size:18px; font-weight:600; margin:0; line-height:1.15; cursor:pointer; overflow-wrap:anywhere;}
+  header h1{font-size:18px; font-weight:600; margin:0; line-height:1.15; overflow-wrap:anywhere;}
   header p{font-size:12.5px; color:var(--muted); margin:2px 0 0;}
   .rename-btn{width:36px; height:36px; border:none; background:transparent; border-radius:9px; flex-shrink:0;
               display:flex; align-items:center; justify-content:center; cursor:pointer;}
   .rename-btn:active{background:var(--card);}
-  .rename-btn svg{width:17px; height:17px; fill:var(--muted);}
+  .rename-btn{width:42px; height:42px;}
+  .rename-btn svg{width:24px; height:24px; fill:var(--muted);}
 
   /* Gesamt-Karte */
   .total{background:var(--green); border-radius:var(--radius); padding:16px 18px; margin-bottom:14px; color:#fff;}
@@ -180,7 +181,16 @@
   .btn-pdf:active{background:var(--green-soft);}
   .btn-pdf svg{width:20px; height:20px; fill:var(--green);}
 
-  .footnote{font-size:11px; color:var(--muted); text-align:center; margin-top:16px; line-height:1.5;}
+  .info-ov{position:fixed; inset:0; z-index:1100; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:20px;}
+  .info-ov.open{display:flex;}
+  .info-box{width:100%; max-width:380px; padding:16px 18px 18px;}
+  .info-kopf{display:flex; align-items:center; justify-content:space-between;}
+  .info-kopf h3{margin:0; font-size:17px; font-weight:600;}
+  .info-ver{font-size:14.5px; margin:10px 0 8px;}
+  .info-txt{font-size:13px; color:var(--muted); line-height:1.6; margin:0;}
+  .info-links{display:flex; gap:8px; margin-top:14px;}
+  .info-link{flex:1; text-align:center; border:1px solid var(--line); border-radius:12px; padding:10px 6px; font-size:13.5px; color:var(--green); text-decoration:none;}
+  .info-link:active{background:var(--bg);}
 
   /* Kamera-Mess-Knopf */
   .btn-measure{width:100%; height:40px; margin:2px 0 0; border:1px dashed var(--line); border-radius:10px;
@@ -377,8 +387,8 @@
     <h1 id="appTitle">Holzmeter</h1>
     <p>Festmeter (Fm) berechnen</p>
   </div>
-  <button type="button" class="rename-btn" id="renameBtn" aria-label="App-Namen ändern" title="App-Namen ändern">
-    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75z"/></svg>
+  <button type="button" class="rename-btn" id="infoBtn" aria-label="Info zu Holzmeter" title="Info">
+    <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 2a8 8 0 110 16 8 8 0 010-16zm-1 5h2V7h-2zm0 8h2v-6h-2z"/></svg>
   </button>
 </header>
 
@@ -640,11 +650,21 @@
   Als PDF herunterladen
 </button>
 
-<p class="footnote">
-  Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
-  Rindenabzug in cm nach Baumart (RVR-Standard). Alles läuft lokal auf dem Gerät.<br>
-  <b>Version 1.6</b> · 18.11.2026 · Web b
-</p>
+<!-- Info (oben rechts ⓘ): Version, Rechenwege, Links -->
+<div class="info-ov" id="infoOv" role="dialog" aria-modal="true" aria-labelledby="infoTitel">
+  <div class="card info-box">
+    <div class="info-kopf"><h3 id="infoTitel">Über Holzmeter</h3><button type="button" class="ls-ovzu" id="infoZu" aria-label="Schließen">×</button></div>
+    <p class="info-ver"><b>Version 1.6</b> · 18.11.2026 · Web c</p>
+    <p class="info-txt">Festmeter nach der Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
+      Rindenabzug in cm nach Baumart (RVR-Standard).<br>
+      Kantholz: eigene Berechnung nach den Schnittklassen S, A, B und C, 3 mm Sägeschnitt.<br>
+      Alles läuft lokal auf dem Gerät, ohne Konto und ohne Internet.</p>
+    <div class="info-links">
+      <a class="info-link" href="https://juliankhler-web.github.io/holzrechner/datenschutz.html" target="_blank" rel="noopener">Datenschutz</a>
+      <a class="info-link" href="https://juliankhler-web.github.io/holzrechner/support.html" target="_blank" rel="noopener">Support &amp; Impressum</a>
+    </div>
+  </div>
+</div>
 
 <div class="statusfill" aria-hidden="true"></div>
 
@@ -1095,7 +1115,7 @@ const els = {
   breakdown:$("breakdown"), bNetto:$("bNetto"), bMwst:$("bMwst"), bMwstLbl:$("bMwstLbl"),
   bMwstRow:$("bMwstRow"), bBrutto:$("bBrutto"), pdfBtn:$("pdfBtn"), printArea:$("printArea"),
   issuer:$("issuer"), recipient:$("recipient"),
-  appTitle:$("appTitle"), renameBtn:$("renameBtn"), manifest:$("manifest"),
+  appTitle:$("appTitle"), manifest:$("manifest"),
   rmFactor:$("rmFactor"), srmFactor:$("srmFactor"), rmVal:$("rmVal"), srmVal:$("srmVal"), rmPdfToggle:$("rmPdfToggle"),
   invNo:$("invNo"), payment:$("payment"), rmPreset:$("rmPreset"),
   wtToggle:$("wtToggle"), wtBody:$("wtBody"), wtPreset:$("wtPreset"), wtW:$("wtW"),
@@ -1339,7 +1359,7 @@ function loadPrefs(){
     if(p.rmPreset) els.rmPreset.value = p.rmPreset;
     if(p.invNo != null) els.invNo.value = p.invNo;
     if(p.payment != null) els.payment.value = p.payment;
-    if(p.appName) appName = p.appName;
+    appName = DEFAULT_APP_NAME;   /* Umbenennen gibt es nicht mehr: früher gespeicherte Namen werden ignoriert */
   }catch(e){}
   syncReveals();
   applyAppName(appName);
@@ -1418,12 +1438,9 @@ function applyAppName(name){
   if(am) am.setAttribute("content", appName.slice(0,30));
   buildManifest(appName);
 }
-function renameApp(){
-  const n = prompt("Name der App (oben angezeigt und im PDF):", appName);
-  if(n === null) return;              // Abbruch
-  applyAppName(n);
-  savePrefs();
-}
+/* Info-Fenster (oben rechts) */
+function infoAuf(){ $("infoOv").classList.add("open"); }
+function infoZu(){ $("infoOv").classList.remove("open"); }
 
 /* --- UI-Sync --- */
 function syncReveals(){
@@ -1862,8 +1879,9 @@ els.vatRate.addEventListener("change", ()=>{ syncReveals(); savePrefs(); render(
 els.vatCustom.addEventListener("input", ()=>{ savePrefs(); render(); });
 els.issuer.addEventListener("input", savePrefs);
 els.recipient.addEventListener("input", savePrefs);
-els.renameBtn.addEventListener("click", renameApp);
-els.appTitle.addEventListener("click", renameApp);
+$("infoBtn").addEventListener("click", infoAuf);
+$("infoZu").addEventListener("click", infoZu);
+$("infoOv").addEventListener("click", (e) => { if(e.target.id === "infoOv") infoZu(); });
 function applyRmPreset(){
   const p = RM_PRESETS[els.rmPreset.value];
   if(p){
@@ -3058,6 +3076,7 @@ if(nativPlugin("App")){
     const ov = document.getElementById("camOverlay");
     if(ov && getComputedStyle(ov).display !== "none"){ const c = document.getElementById("camClose"); if(c) c.click(); return; }
     if(document.getElementById("lsOv").classList.contains("open")){ lsOvZu(); return; }
+    if(document.getElementById("infoOv").classList.contains("open")){ infoZu(); return; }
     if(curTab === "liste" && lsOpen){ lsOpen = null; lsEditPos = null; savePrefs(); lsRender(); return; }
     nativPlugin("App").minimizeApp();
   });
