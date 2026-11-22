@@ -671,7 +671,7 @@
 <div class="info-ov" id="infoOv" role="dialog" aria-modal="true" aria-labelledby="infoTitel">
   <div class="card info-box">
     <div class="info-kopf"><h3 id="infoTitel">Über Holzmeter</h3><button type="button" class="ls-ovzu" id="infoZu" aria-label="Schließen">×</button></div>
-    <p class="info-ver"><b>Version 1.9</b> · 22.11.2026</p>
+    <p class="info-ver"><b>Version 2.0</b> · 22.11.2026</p>
     <p class="info-txt">Festmeter nach der Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
       Rindenabzug in cm nach Baumart (RVR-Standard).<br>
       Kantholz: eigene Berechnung nach den Schnittklassen S, A, B und C, 3 mm Sägeschnitt.<br>
@@ -2636,7 +2636,7 @@ const LP = (() => {
     });
   }
   /* Excel (.xlsx) ohne fremden Baustein: ZIP-Inhaltsverzeichnis lesen, Dateien mit DecompressionStream entpacken */
-  async function zipDateien(buf, gesucht){
+  async function zipDateien(buf, gesucht, alsBytes){
     const u = new Uint8Array(buf), dv = new DataView(u.buffer, u.byteOffset, u.byteLength);
     let e = u.length - 22;
     while(e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
@@ -2661,7 +2661,7 @@ const LP = (() => {
         const st = new Blob([roh]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
         daten = new Uint8Array(await new Response(st).arrayBuffer());
       }else continue;
-      aus[name] = td.decode(daten);
+      aus[name] = alsBytes ? daten : td.decode(daten);
     }
     return aus;
   }
@@ -2695,9 +2695,92 @@ const LP = (() => {
       return {t: w.text, x0: w.bbox.x0 + yc * t, x1: w.bbox.x1 + yc * t};
     }));
   }
+  /* cadwork-Listendatei (.cwlm): ZIP mit Firebird-Datenbank (ODS 11) CONTENT_3D.FDB. Die Stückliste steht in der
+     Tabelle CWLM_MODELS (ein Datensatz je Stück: NUMBER_TIMBER_LISTE, WIDTH/HEIGHT/LENGTH_LIST in mm, NAME_ID → CW_ATTRIBUTES,
+     MATERIAL_ID → CW_MATERIALS), der Projektname in CWLM_GENERAL_DATA. Gelesen wird nur, nichts verändert. */
+  function cadworkListe(u){
+    const dv = new DataView(u.buffer, u.byteOffset, u.byteLength);
+    if(u.length < 4096 || u[0] !== 1) throw new Error("Die cadwork-Datei ist beschädigt oder unvollständig.");
+    const ps = dv.getUint16(0x10, true), ods = dv.getUint16(0x12, true) & 0x7fff;
+    if(ods !== 11 || ps < 1024 || ps > 65536) throw new Error("Diese cadwork-Version kann Holzmeter noch nicht direkt lesen. Bitte in cadwork die Stückliste als PDF ausgeben.");
+    const seiten = Math.floor(u.length / ps), lat = new TextDecoder("latin1"), utf = new TextDecoder("utf-8");
+    const rle = (b) => { const out = []; let i = 0; while(i < b.length){ const c = (b[i] << 24) >> 24; i++; if(c > 0){ for(let k = 0; k < c && i < b.length; k++) out.push(b[i++]); } else if(c < 0){ const v = b[i++]; for(let k = 0; k < -c; k++) out.push(v); } } return Uint8Array.from(out); };
+    const zeileAuf = (pg, line) => { const o = pg * ps, off = dv.getUint16(o + 24 + 4*line, true), ln = dv.getUint16(o + 26 + 4*line, true); return u.subarray(o + off, o + off + ln); };
+    const ganz = (r) => {
+      const rv = new DataView(r.buffer, r.byteOffset, r.byteLength), fl = rv.getUint16(10, true);
+      if(!(fl & 8)) return rle(r.subarray(13));
+      const teile = [r.subarray(22)]; let fp = rv.getUint32(16, true), fln = rv.getUint16(20, true);
+      for(let n = 0; n < 60; n++){
+        const fr = zeileAuf(fp, fln), fv = new DataView(fr.buffer, fr.byteOffset, fr.byteLength), ffl = fv.getUint16(10, true);
+        if(ffl & 8){ teile.push(fr.subarray(22)); fp = fv.getUint32(16, true); fln = fv.getUint16(20, true); } else { teile.push(fr.subarray(13)); break; }
+      }
+      const ges = new Uint8Array(teile.reduce((a, t) => a + t.length, 0)); let o = 0; for(const t of teile){ ges.set(t, o); o += t.length; }
+      return rle(ges);
+    };
+    /* alle gültigen Datensätze je Tabelle sammeln (nur die benötigten Tabellen entpacken) */
+    const relSaetze = (wanted) => {
+      const out = {};
+      for(let pg = 0; pg < seiten; pg++){
+        const o = pg * ps; if(u[o] !== 5) continue;
+        const rel = dv.getUint16(o + 20, true), cnt = dv.getUint16(o + 22, true);
+        if(!wanted.has(rel)) continue;
+        for(let k = 0; k < cnt; k++){
+          const off = dv.getUint16(o + 24 + 4*k, true), ln = dv.getUint16(o + 26 + 4*k, true);
+          if(!off || ln < 13) continue;
+          const r = u.subarray(o + off, o + off + ln), fl = r[10] | (r[11] << 8);
+          if(fl & (1 | 2 | 4 | 16)) continue;
+          (out[rel] ||= []).push(ganz(r));
+        }
+      }
+      return out;
+    };
+    const txt = (d, a, n) => lat.decode(d.subarray(a, a + n)).trim();
+    const sys = relSaetze(new Set([2, 5, 6]));
+    const relId = {}; for(const d of sys[6] || []) if(d.length > 73) relId[txt(d, 42, 31)] = d[32] | (d[33] << 8);
+    const dom = {}; for(const d of sys[2] || []) if(d.length > 126) dom[txt(d, 4, 31)] = [d[120] | (d[121] << 8), d[124] | (d[125] << 8)];
+    const feldListe = {}; for(const d of sys[5] || []) if(d.length > 308){ (feldListe[txt(d, 35, 31)] ||= []).push([d[306] | (d[307] << 8), txt(d, 4, 31), txt(d, 66, 31)]); }
+    const AUSR = {14:1, 37:2, 7:2, 8:4, 27:8, 16:8, 35:8, 10:4, 12:4, 13:4, 23:1};
+    const lay = (tab) => {
+      const fl = (feldListe[tab] || []).sort((a, b) => a[0] - b[0]); let off = Math.floor((fl.length + 7) / 8); const L = {};
+      for(const [, n, src] of fl){ const [ln, ty] = dom[src] || [0, 0]; const a = AUSR[ty] || 1; off = Math.ceil(off / a) * a; L[n] = [off, ty, ln]; off += ty === 37 ? ln + 2 : ln; }
+      return L;
+    };
+    const wert = (d, L, n) => {
+      if(!L[n]) return null; const [off, ty, ln] = L[n]; if(off + 1 > d.length) return null;
+      const v = new DataView(d.buffer, d.byteOffset, d.byteLength);
+      if(ty === 27) return v.getFloat64(off, true);
+      if(ty === 16) return Number(v.getBigInt64(off, true));
+      if(ty === 8) return v.getInt32(off, true);
+      if(ty === 7) return v.getInt16(off, true);
+      if(ty === 37){ const l = v.getUint16(off, true); return utf.decode(d.subarray(off + 2, off + 2 + l)).trim(); }
+      if(ty === 14) return utf.decode(d.subarray(off, off + ln)).replace(/[\s\u0000]+$/, "").trim();
+      return null;
+    };
+    const T = ["CWLM_MODELS", "CW_ATTRIBUTES", "CW_MATERIALS", "CWLM_GENERAL_DATA"];
+    if(relId.CWLM_MODELS == null) throw new Error("In dieser cadwork-Datei ist keine Stückliste gespeichert. Bitte in cadwork die Stückliste als PDF ausgeben.");
+    const daten = relSaetze(new Set(T.filter(t => relId[t] != null).map(t => relId[t])));
+    const L = {}; T.forEach(t => L[t] = lay(t));
+    const nam = {}; for(const d of daten[relId.CW_ATTRIBUTES] || []) nam[wert(d, L.CW_ATTRIBUTES, "ID")] = wert(d, L.CW_ATTRIBUTES, "NAME_AL");
+    const mat = {}; for(const d of daten[relId.CW_MATERIALS] || []) mat[wert(d, L.CW_MATERIALS, "ID")] = wert(d, L.CW_MATERIALS, "NAME_AL");
+    let name = ""; for(const d of daten[relId.CWLM_GENERAL_DATA] || []) name = name || wert(d, L.CWLM_GENERAL_DATA, "PROJECT_NAME") || "";
+    const gruppen = new Map();
+    for(const d of daten[relId.CWLM_MODELS] || []){
+      const w = (n) => wert(d, L.CWLM_MODELS, n);
+      const b = Math.round(w("WIDTH_LIST") * 10) / 10, h = Math.round(w("HEIGHT_LIST") * 10) / 10, l = Math.round(w("LENGTH_LIST") * 10) / 10;
+      if(!(b > 0 && h > 0 && l > 0)) continue;
+      const nr = w("NUMBER_TIMBER_LISTE") || 0, m = mat[w("MATERIAL_ID")] || "", nm = nam[w("NAME_ID")] || "";
+      const key = [nr, b, h, l, m].join("|");
+      const g = gruppen.get(key) || {nr, b, h, l, m, namen: new Set(), n: 0};
+      g.n += Math.max(1, w("QUANTITY") || 1); if(nm) g.namen.add(nm); gruppen.set(key, g);
+    }
+    const pos = [...gruppen.values()].sort((a, c) => a.nr - c.nr || c.h - a.h || c.l - a.l).map(g => ({
+      bez: [[...g.namen].join(" / "), g.m].filter(Boolean).join(" · "), b: g.b, h: g.h, l: g.l, n: g.n, nUnsicher: false,
+      secU: "mm", lenU: "mm", src: `cadwork Nr ${g.nr}: ${[...g.namen].join(" / ") || "ohne Namen"}, ${g.b} × ${g.h} mm, ${g.l} mm, ${g.n} Stück`, kopf: true, unvollst: false}));
+    return {pos, name, secU: "mm", lenU: "mm", mitKopf: true};
+  }
   const FAKTOR_SEC = {cm: 1, mm: 0.1, m: 100};
   const FAKTOR_LEN = {m: 1, cm: 0.01, mm: 0.001};
-  return {lies, csvZeilen, xmlZeilen, xlsxZeilen, ocrZeilen, zuZeilen, zahl, rolle, freiZeile, FAKTOR_SEC, FAKTOR_LEN};
+  return {lies, csvZeilen, xmlZeilen, xlsxZeilen, ocrZeilen, cadworkListe, zipDateien, zuZeilen, zahl, rolle, freiZeile, FAKTOR_SEC, FAKTOR_LEN};
 })();
 /* HOLZLISTE-PARSER ENDE */
 
@@ -2757,7 +2840,7 @@ function lsUebersichtHtml(){
           <button type="button" class="btn-pdf" data-ls="import">${lsIco.datei}Datei einlesen</button>
           <button type="button" class="btn-pdf" data-ls="foto">${lsIco.foto}Liste fotografieren</button>
         </div>
-        <p class="ls-hinweis">Einlesen: PDF, XML (auch BTLx), CSV, Excel oder ein Foto der Liste. Vor dem Übernehmen prüfst du jede Zeile.</p>`;
+        <p class="ls-hinweis">Einlesen: cadwork-Liste (.cwlm), PDF, XML (auch BTLx), CSV, Excel oder ein Foto der Liste. Vor dem Übernehmen prüfst du jede Zeile.</p>`;
   return h;
 }
 function lsProjektHtml(pr){
@@ -3056,7 +3139,15 @@ async function lsDateiLesen(f){
   const CADWORK = "Das ist eine cadwork-Projektdatei, darin steckt das ganze 3D-Modell und keine fertige Liste. Bitte in cadwork die Stückliste als PDF ausgeben (oder als Excel/CSV) und diese Datei einlesen.";
   if(istZip){
     const namen = new TextDecoder("latin1").decode(new Uint8Array(await f.arrayBuffer()).subarray(0, Math.min(f.size, 4 * 1024 * 1024)));
-    if(/CONTENT_3D\.FDB|\.cwlm|\.3d\b/i.test(namen) || /^(cwlm|cwp|cwps|3d)$/.test(e) || /\.cwlm\./i.test(name)) throw new Error(CADWORK);
+    if(/CONTENT_3D\.FDB/.test(namen)){
+      lsStatus("cadwork-Datei wird gelesen …");
+      const z = await LP.zipDateien(await f.arrayBuffer(), n => n === "CONTENT_3D.FDB", true);
+      if(!z["CONTENT_3D.FDB"]) throw new Error(CADWORK);
+      const erg = LP.cadworkListe(z["CONTENT_3D.FDB"]);
+      if(!erg.pos.length) throw new Error("In dieser cadwork-Datei ist keine Stückliste mit Maßen gespeichert. Bitte in cadwork die Stückliste als PDF ausgeben.");
+      return {erg, ocr: false, quelle: name, zeilen: []};
+    }
+    if(/\.cwlm|\.3d\b/i.test(namen) || /^(cwlm|cwp|cwps|3d)$/.test(e) || /\.cwlm\./i.test(name)) throw new Error(CADWORK);
     if(/xl\/worksheets\//.test(namen)){
       lsStatus("Excel-Datei wird gelesen …");
       const zeilen = await LP.xlsxZeilen(await f.arrayBuffer(), DOMParser);
