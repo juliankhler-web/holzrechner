@@ -1,8 +1,10 @@
-/* Service Worker für Kößler Holzberechnung.
+/* Service Worker für Holzmeter.
    Strategie: network-first mit Cache-Fallback — online bekommt man IMMER die
    neueste Version (Updates greifen sofort), offline wird aus dem Cache geliefert. */
-const CACHE = "koessler-holz-v2";
-const ASSETS = ["./", "./index.html"];
+const CACHE = "holzmeter-v3";
+const ASSETS = ["./", "./index.html",
+  "./js/rechnen.js", "./js/zopf.js", "./js/holzliste-daten.js", "./js/holzliste-parser.js",
+  "./js/app.js", "./js/pdf.js", "./js/kantholz.js", "./js/kamera.js", "./js/holzliste.js", "./js/start.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -27,6 +29,6 @@ self.addEventListener("fetch", (e) => {
         caches.open(CACHE).then((c) => { try { c.put(e.request, copy); } catch (_) {} });
         return res;
       })
-      .catch(() => caches.match(e.request).then((hit) => hit || caches.match("./index.html")))
+      .catch(() => caches.match(e.request, {ignoreSearch: true}).then((hit) => hit || caches.match("./index.html")))
   );
 });
