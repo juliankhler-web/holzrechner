@@ -101,6 +101,13 @@
   .z-plan-liste .zp b{min-width:22px; text-align:center; color:#fff; background:var(--wood); border-radius:6px; font-size:12px; padding:1px 4px; height:fit-content;}
   .z-plan-liste .zp span{color:var(--muted); font-size:12.5px;}
   .z-plan-rest{font-size:12.5px; color:var(--muted); margin:6px 0 0; line-height:1.5;}
+  .z-opt-titel{font-size:13.5px; font-weight:600; margin:4px 0 8px;}
+  .z-opts{display:flex; flex-direction:column; gap:7px; margin-bottom:12px;}
+  .z-opt{text-align:left; font:inherit; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:9px 11px; cursor:pointer;}
+  .z-opt.on{border:2px solid var(--green); padding:8px 10px;}
+  .z-opt-kopf{display:flex; justify-content:space-between; font-size:14.5px;}
+  .z-opt-kopf span{color:var(--green); font-weight:600;}
+  .z-opt-txt{font-size:12.5px; color:var(--muted); margin-top:2px; line-height:1.4;}
 
   /* Karten */
   .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);}
@@ -671,7 +678,7 @@
 <div class="info-ov" id="infoOv" role="dialog" aria-modal="true" aria-labelledby="infoTitel">
   <div class="card info-box">
     <div class="info-kopf"><h3 id="infoTitel">Über Holzmeter</h3><button type="button" class="ls-ovzu" id="infoZu" aria-label="Schließen">×</button></div>
-    <p class="info-ver"><b>Version 2.0</b> · 22.11.2026</p>
+    <p class="info-ver"><b>Version 2.1</b> · 22.11.2026</p>
     <p class="info-txt">Festmeter nach der Huber-Formel (Mittenstärke): V = π·(Ø/200)²·Länge.<br>
       Rindenabzug in cm nach Baumart (RVR-Standard).<br>
       Kantholz: eigene Berechnung nach den Schnittklassen S, A, B und C, 3 mm Sägeschnitt.<br>
@@ -1784,73 +1791,52 @@ function zopfSvg(rects, cx, cy, D, cap){
     wane ? '<br><span style="color:var(--danger)">Rot</span> = Baumkante (dort fehlt Holz an den Kanten)'
          : (r - far > 0.3 ? "<br>Scharfkantig – rundum bleibt noch Holz übrig" : "<br>Scharfkantig: die Ecken berühren gerade den Stamm")}</div>`;
 }
-/* --- Kantholz „Aus Holzliste“: welche offenen Balken aus diesem Stamm schneiden? ---
-   1) offene Stücke je Querschnitt in Längen-Stangen bündeln (Stamm-Länge, 3 mm Sägeschnitt, größte zuerst)
-   2) Stangen-Querschnitte in den Stamm-Querschnitt legen (Schnittklasse, 3 mm Fuge): mehrere Reihenfolgen und
-      Start in der Mitte bzw. unten probieren, die Lösung mit dem meisten Holz gewinnt.
-   Große Querschnitte kommen zuerst, damit kleine Balken für dünnere Stämme übrig bleiben. */
+/* --- Kantholz „Aus Holzliste“: aus einem Stamm schneidet man ein Maß. Je Querschnitt der offenen Balken:
+   wie viele passen nebeneinander in den Zopf (zFitInD, Schnittklasse, 3 mm Fuge) und welche Längen gehen hintereinander
+   aus der Stammlänge (größte zuerst, 5 mm Kappzugabe). Ergebnis = Auswahl aller passenden Maße, beste Ausbeute zuerst. */
 const Z_LAENGE_FUGE = 0.005;          // m Säge-/Kappzugabe zwischen zwei Stücken auf einer Stange
-function zSchnittplan(D, Ls, kl, offen){
-  const R = D / 2, K = Z_FUGE;
-  const einzelnOk = (w, h) => zRectOk(zR(-w/2, -h/2, w, h), 0, 0, R, kl, Math.max(w, h)) || zRectOk(zR(-h/2, -w/2, h, w), 0, 0, R, kl, Math.max(w, h));
-  const zuLang = [], zuDick = [], stuecke = [];
+function zGleichOptionen(D, Ls, kl, offen){
+  const gruppen = {};
   for(const p of offen){
     if(!(p.b > 0 && p.h > 0 && p.l > 0)) continue;
-    if(p.l > Ls + 1e-9){ zuLang.push(p); continue; }
-    if(!einzelnOk(Math.min(p.b, p.h), Math.max(p.b, p.h))){ zuDick.push(p); continue; }
-    for(let i = 0; i < Math.min(p.rest, 400); i++) stuecke.push({p, l: p.l});
+    const w = Math.min(p.b, p.h), h = Math.max(p.b, p.h), key = w + "x" + h;
+    (gruppen[key] ||= {key, w, h, pos: []}).pos.push(p);
   }
-  /* 1) Stangen bilden */
-  const gruppen = {};
-  for(const st of stuecke){ const w = Math.min(st.p.b, st.p.h), h = Math.max(st.p.b, st.p.h); (gruppen[w + "x" + h] ||= {w, h, st: []}).st.push(st); }
-  const stangen = [];
+  const optionen = [], passtNicht = [], zuLang = [];
+  const m3Stamm = Math.PI * (D/2) * (D/2) / 10000 * Ls;
   for(const g of Object.values(gruppen)){
-    const eig = [];
-    for(const st of g.st.sort((a, b) => b.l - a.l)){
-      const s2 = eig.find(x => x.len + Z_LAENGE_FUGE + st.l <= Ls + 1e-9);
-      if(s2){ s2.len += Z_LAENGE_FUGE + st.l; s2.teile.push(st); } else eig.push({w: g.w, h: g.h, len: st.l, teile: [st], key: g.w + "x" + g.h});
+    const fit = zFitInD(D, g.w, g.h, kl);
+    if(!fit.count){ passtNicht.push(g); continue; }
+    /* Stücke in Stangen der Stammlänge packen */
+    const stuecke = [];
+    for(const p of g.pos){ if(p.l > Ls + 1e-9) continue; for(let i = 0; i < Math.min(p.rest, 500); i++) stuecke.push({p, l: p.l}); }
+    if(!stuecke.length){ zuLang.push(g); continue; }
+    stuecke.sort((a, b) => b.l - a.l);
+    const stangen = [];
+    for(const st of stuecke){
+      const s2 = stangen.find(x => x.len + Z_LAENGE_FUGE + st.l <= Ls + 1e-9);
+      if(s2){ s2.len += Z_LAENGE_FUGE + st.l; s2.teile.push(st); } else stangen.push({len: st.l, teile: [st]});
     }
-    stangen.push(...eig);
-  }
-  const wert = (s2) => s2.w * s2.h * s2.teile.reduce((a, t) => a + t.l, 0);
-  /* 2) in den Kreis legen */
-  const step = Math.max(0.25, D / 240);
-  const frei = (r, gelegt) => gelegt.every(q => r.x >= q.x + q.w + K - 1e-9 || q.x >= r.x + r.w + K - 1e-9 || r.y >= q.y + q.h + K - 1e-9 || q.y >= r.y + r.h + K - 1e-9);
-  function legen(reihe, mitte){
-    const gelegt = [], nutz = [], fehl = new Set();
-    for(const s2 of reihe){
-      if(fehl.has(s2.key)) continue;
-      let best = null;
-      for(const [w, h] of (s2.w === s2.h ? [[s2.w, s2.h]] : [[s2.w, s2.h], [s2.h, s2.w]])){
-        const hp = Math.max(w, h), rand = kl === "S" ? 0 : hp * 0.4;
-        if(mitte && !gelegt.length){
-          const r = zR(-w/2, -h/2, w, h);
-          if(zRectOk(r, 0, 0, R, kl, hp)){ best = r; break; }
-        }
-        let gef = null;
-        for(let y = -R - rand; y <= R - h + rand && !gef; y += step){
-          for(let x = -R - rand; x <= R - w + rand; x += step){
-            const r = zR(x, y, w, h);
-            if(frei(r, gelegt) && zRectOk(r, 0, 0, R, kl, hp)){ gef = r; break; }
-          }
-        }
-        if(gef && (!best || gef.y < best.y - 1e-9 || (Math.abs(gef.y - best.y) < 1e-9 && gef.x < best.x))) best = gef;
-      }
-      if(best){ gelegt.push(best); nutz.push({s2, r: best}); } else fehl.add(s2.key);
+    stangen.sort((a, b) => b.len - a.len);
+    const nutz = stangen.slice(0, fit.count);
+    /* nur so viele Plätze zeichnen wie gebraucht – die innersten */
+    let rects = fit.rects;
+    if(nutz.length < rects.length){
+      const far = r => Math.max(...zCorners([r]).map(q => Math.hypot(q.x - fit.cx, q.y - fit.cy)));
+      rects = rects.slice().sort((a, b) => far(a) - far(b)).slice(0, nutz.length);
     }
-    return {nutz, wert: nutz.reduce((a, n2) => a + wert(n2.s2), 0)};
+    const m3 = nutz.reduce((a, s2) => a + s2.teile.reduce((b, t) => b + g.w * g.h / 10000 * t.l, 0), 0);
+    optionen.push({key: g.key, w: g.w, h: g.h, plaetze: fit.count, label: fit.label, nutz, rects, cx: fit.cx, cy: fit.cy,
+                   m3, ausbeute: m3Stamm > 0 ? m3 / m3Stamm : 0, stk: nutz.reduce((a, s2) => a + s2.teile.length, 0),
+                   offenStk: stuecke.length});
   }
-  const sortiert = (f) => stangen.slice().sort((a, b) => f(b) - f(a) || wert(b) - wert(a));
-  let best = {nutz: [], wert: 0};
-  for(const reihe of [sortiert(wert), sortiert(s2 => s2.w * s2.h), sortiert(s2 => s2.h), sortiert(s2 => s2.w)])
-    for(const mitte of [true, false]){ const v = legen(reihe, mitte); if(v.wert > best.wert + 1e-9) best = v; }
-  const m3 = best.wert / 10000, m3Stamm = Math.PI * R * R / 10000 * Ls;
-  return {nutz: best.nutz, m3, ausbeute: m3Stamm > 0 ? m3 / m3Stamm : 0, zuLang, zuDick, anzStuecke: stuecke.length};
+  optionen.sort((a, b) => b.ausbeute - a.ausbeute || b.stk - a.stk);
+  return {optionen, passtNicht, zuLang};
 }
 function zPlanOffen(pr){
   return (pr.pos || []).map((p, i) => ({id: p.id, nr: i + 1, bez: p.bez || "Position " + (i + 1), b: p.b, h: p.h, l: p.l, rest: (p.n || 1) - lsFertig(p)})).filter(p => p.rest > 0);
 }
-let zPlanLetzt = null, zPlanMeldung = "";
+let zPlanLetzt = null, zPlanMeldung = "", zPlanMass = null;
 function zPlanRender(){
   const sel = $("zProj");
   const mitOffen = listen.filter(pr => zPlanOffen(pr).length);
@@ -1863,46 +1849,53 @@ function zPlanRender(){
   sel.value = zProjWahl;
   const pr = listen.find(x => x.id === zProjWahl), kl = els.zKlasse.value;
   const D = num(els.zDia.value), Ls = num($("zLen").value);
-  const hint = "Vorschlag ohne Gewähr: Die App legt die noch offenen Balken der Liste so in den Stamm, dass möglichst viel Holz genutzt wird " +
-    "(Schnittklasse wie oben, 3 mm Sägeschnitt, Zopf-Ø = dünnes Ende ohne Rinde). Kürzere Balken gleichen Querschnitts werden hintereinander " +
-    "aus einer Stange geschnitten. Große Querschnitte kommen zuerst, kleine bleiben für dünnere Stämme übrig. Vor dem Einschnitt am Stamm prüfen.";
+  const hint = "Vorschlag ohne Gewähr: Je Maß der noch offenen Balken rechnet die App, wie viele Stück nebeneinander in den Zopf passen " +
+    "(Schnittklasse wie oben, 3 mm Sägeschnitt, Zopf-Ø = dünnes Ende ohne Rinde) und welche Längen hintereinander aus der Stammlänge gehen. " +
+    "Die Maße sind nach Ausbeute sortiert – das beste ist vorgewählt. Vor dem Einschnitt am Stamm prüfen.";
   const zeig = (k, v, sub) => { els.zValK.textContent = k; els.zVal.textContent = v; els.zValSub.textContent = sub; };
   els.zHint.textContent = hint;
   const offen = zPlanOffen(pr);
   if(!offen.length){ zeig("Aus Holzliste schneiden", "alles fertig", `In „${pr.name}“ ist nichts mehr offen.`); els.zDraw.innerHTML = ""; return; }
   if(!(D > 0 && D <= 300) || !(Ls > 0 && Ls <= 40)){ zeig("Aus Holzliste schneiden", "–", "Zopf-Ø (cm) und Stammlänge (m) oben eingeben"); els.zDraw.innerHTML = ""; return; }
-  const plan = zSchnittplan(D, Ls, kl, offen);
-  zPlanLetzt = {pr: pr.id, plan};
-  if(!plan.nutz.length){
-    zeig(`Aus Ø ${zCm(D)} cm · ${fmt(Ls, 2)} m`, "nichts passt", plan.zuLang.length === offen.length ? "Alle offenen Balken sind länger als der Stamm." : "Kein offener Balken passt in diesen Querschnitt.");
+  const erg = zGleichOptionen(D, Ls, kl, offen);
+  if(!erg.optionen.length){
+    zeig(`Aus Ø ${zCm(D)} cm · ${fmt(Ls, 2)} m`, "nichts passt", erg.zuLang.length && !erg.passtNicht.length ? "Alle offenen Balken sind länger als der Stamm." : "Kein offener Balken passt in diesen Zopf.");
     els.zDraw.innerHTML = zopfSvg([], 0, 0, D, `<b>Ø ${zCm(D)} cm</b> (Zopf)`);
     return;
   }
-  /* Zeichnung: Nummer = Position in der Holzliste */
-  const rects = plan.nutz.map(n2 => Object.assign({}, n2.r, {lab: String(n2.s2.teile[0].p.nr)}));
-  const stk = plan.nutz.reduce((a, n2) => a + n2.s2.teile.length, 0);
-  zeig(`Vorschlag aus Ø ${zCm(D)} cm · ${fmt(Ls, 2)} m`, `${stk} Stück`, `${fmt(plan.m3)} m³ Balken · Ausbeute ${Math.round(plan.ausbeute * 100)} % vom Zopf-Zylinder`);
-  els.zDraw.innerHTML = zopfSvg(rects, 0, 0, D, `<b>Ø ${zCm(D)} cm</b> (Zopf) · Zahl = Position in der Holzliste`);
-  /* Liste: je Position, mit Stangen-Aufteilung */
+  if(!erg.optionen.some(o => o.key === zPlanMass)) zPlanMass = erg.optionen[0].key;
+  const opt = erg.optionen.find(o => o.key === zPlanMass);
+  zPlanLetzt = {pr: pr.id, opt};
   const jePos = {};
-  for(const n2 of plan.nutz) for(const t of n2.s2.teile){ (jePos[t.p.id] ||= {p: t.p, n: 0}).n++; }
-  const zeilen = Object.values(jePos).sort((a, b) => a.p.nr - b.p.nr).map(x =>
+  for(const s2 of opt.nutz) for(const t of s2.teile){ (jePos[t.p.id] ||= {p: t.p, n: 0}).n++; }
+  const posText = (o) => { const j = {}; for(const s2 of o.nutz) for(const t of s2.teile){ (j[t.p.id] ||= {p: t.p, n: 0}).n++; }
+    return Object.values(j).sort((x, y) => x.p.nr - y.p.nr).map(x => `${x.n}× ${escapeHtml(x.p.bez)} ${fmt(x.p.l, 2)} m`).join(", "); };
+  zeig(`${lsCm(opt.w)}/${lsCm(opt.h)} cm aus Ø ${zCm(D)} cm · ${fmt(Ls, 2)} m`, `${opt.stk} Stück`, `${fmt(opt.m3)} m³ Balken · Ausbeute ${Math.round(opt.ausbeute * 100)} % vom Zopf-Zylinder`);
+  const rects = opt.rects.map((r, i) => Object.assign({}, r, {lab: String(opt.nutz[i] ? opt.nutz[i].teile[0].p.nr : "")}));
+  els.zDraw.innerHTML = zopfSvg(rects, opt.cx, opt.cy, D, `<b>Ø ${zCm(D)} cm</b> (Zopf) · ${lsCm(opt.w)}/${lsCm(opt.h)} cm · Platz für ${opt.plaetze} Stück nebeneinander · Zahl = Position`);
+  const auswahl = erg.optionen.map(o => `<button type="button" class="z-opt${o.key === opt.key ? " on" : ""}" data-zmass="${o.key}">
+      <div class="z-opt-kopf"><b>${lsCm(o.w)}/${lsCm(o.h)} cm</b><span>${Math.round(o.ausbeute * 100)} %</span></div>
+      <div class="z-opt-txt">${o.stk} Stück: ${posText(o)}</div></button>`).join("");
+  const zeilen = Object.values(jePos).sort((a2, b2) => a2.p.nr - b2.p.nr).map(x =>
     `<div class="zp"><b>${x.p.nr}</b><div>${x.n}× ${escapeHtml(x.p.bez)} ${lsCm(x.p.b)}/${lsCm(x.p.h)} cm · ${fmt(x.p.l, 2)} m<br><span>danach noch ${x.p.rest - x.n} von ${x.p.rest} offen</span></div></div>`).join("");
-  const mehrfach = plan.nutz.filter(n2 => n2.s2.teile.length > 1).map(n2 =>
-    `${lsCm(n2.s2.w)}/${lsCm(n2.s2.h)}: ${n2.s2.teile.map(t => fmt(t.l, 2)).join(" + ")} m`);
-  const restStk = offen.reduce((a, p) => a + p.rest, 0) - stk;
-  let rest = `Danach noch offen: ${restStk} Stück.`;
-  if(plan.zuLang.length) rest += ` Länger als dieser Stamm: ${plan.zuLang.map(p => "Pos. " + p.nr).join(", ")}.`;
-  if(plan.zuDick.length) rest += ` Zu dick für diesen Ø: ${plan.zuDick.map(p => "Pos. " + p.nr).join(", ")}.`;
-  $("zPlan").innerHTML = (zPlanMeldung ? `<p class="ls-info">${zPlanMeldung}</p>` : "") + `<div class="z-plan-liste">${zeilen}</div>` +
+  const mehrfach = opt.nutz.filter(s2 => s2.teile.length > 1).map(s2 => s2.teile.map(t => fmt(t.l, 2)).join(" + ") + " m");
+  let rest = "";
+  if(opt.offenStk > opt.stk) rest += `Von diesem Maß bleiben danach noch ${opt.offenStk - opt.stk} Stück offen. `;
+  if(opt.nutz.length < opt.plaetze) rest += `Im Stamm wäre Platz für ${opt.plaetze} Stück, gebraucht werden nur ${opt.nutz.length}. `;
+  if(erg.passtNicht.length) rest += `Passt nicht in diesen Zopf: ${erg.passtNicht.map(g => lsCm(g.w) + "/" + lsCm(g.h)).join(", ")}. `;
+  if(erg.zuLang.length) rest += `Länger als der Stamm: ${erg.zuLang.map(g => lsCm(g.w) + "/" + lsCm(g.h)).join(", ")}.`;
+  $("zPlan").innerHTML = (zPlanMeldung ? `<p class="ls-info">${zPlanMeldung}</p>` : "") +
+    `<p class="z-opt-titel">Welches Maß willst du schneiden? (${erg.optionen.length} passen)</p><div class="z-opts">${auswahl}</div>
+     <div class="z-plan-liste">${zeilen}</div>` +
     (mehrfach.length ? `<p class="z-plan-rest"><b>Hintereinander aus einer Stange:</b> ${mehrfach.join(" · ")}</p>` : "") +
-    `<p class="z-plan-rest">${rest}</p>
-     <button type="button" class="btn-add" id="zPlanOk">${lsIco.check}Geschnitten – in Holzliste abhaken</button>`;
+    (rest ? `<p class="z-plan-rest">${rest}</p>` : "") +
+    `<button type="button" class="btn-add" id="zPlanOk">${lsIco.check}Geschnitten – in Holzliste abhaken</button>`;
+  $("zPlan").querySelectorAll("[data-zmass]").forEach(btn => btn.onclick = () => { zPlanMass = btn.dataset.zmass; renderZopf(); const d = $("zDraw"); if(d) d.scrollIntoView({behavior: "smooth", block: "start"}); });
   $("zPlanOk").onclick = () => {
     const pr2 = listen.find(x => x.id === zPlanLetzt.pr); if(!pr2) return;
-    if(!confirm(`${stk} Stück in „${pr2.name}“ als erstellt abhaken?`)) return;
+    if(!confirm(`${opt.stk} Stück ${lsCm(opt.w)}/${lsCm(opt.h)} cm in „${pr2.name}“ als erstellt abhaken?`)) return;
     for(const x of Object.values(jePos)){ const p = pr2.pos.find(q => q.id === x.p.id); if(p){ p.fertig = Math.min(p.n || 1, lsFertig(p) + x.n); p.done = p.fertig >= (p.n || 1); if(p.done) p.doneAt = new Date().toISOString(); } }
-    zPlanMeldung = `✓ ${stk} Stück in „${escapeHtml(pr2.name)}“ abgehakt. Unten der Vorschlag für den nächsten Stamm (Ø und Länge anpassen).`;
+    zPlanMeldung = `✓ ${opt.stk} Stück in „${escapeHtml(pr2.name)}“ abgehakt. Unten die Auswahl für den nächsten Stamm (Ø und Länge anpassen).`;
     lsSpeichern(); lsRender(); renderZopf(); zPlanMeldung = ""; window.scrollTo({top: 0, behavior: "smooth"});
   };
 }
