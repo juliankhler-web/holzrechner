@@ -1,4 +1,4 @@
-/* Holzmeter – Rechnen (reine Rechenlogik, ohne Bildschirm)
+/* HolzBuch – Rechnen (reine Rechenlogik, ohne Bildschirm)
    Festmeter (Huber-Formel), Rindenabzug je Baumart, Gewicht, Zahlen lesen und formatieren, Summen.
    Braucht: nichts. Wird geprüft in tests/ (node tests/alle.mjs und tests.html). */
 "use strict";
@@ -88,3 +88,34 @@ function summen(items, price, rate, w){
   const kg = w != null ? items.reduce((s,it)=>s + (itemKg(it,w) || 0), 0) : null;
   return { totalFm, price, rate, netto, mwst, brutto: netto+mwst, stems: items.reduce((s,it)=>s+it.qty,0), w, kg };
 }
+
+/* ---- Holzsorten wie in der Praxis (RVR 2023, Anlage VI-b; Holzvermessungsanweisung Landesforsten RLP, Tab. 6 + 11) ----
+   Abschnitt (Stammholz-Standardlänge bis 6 m): gewählt wird die Bestelllänge; abgelängt wird mit Übermaß (1 %, auf cm
+     aufgerundet, mindestens 10 cm), gerechnet wird mit der Bestelllänge – das Übermaß zählt nicht.
+   Langholz (über 6 m): gemessene Länge; das Übermaß wird abgezogen und auf 10 cm abgerundet (Julian 22.11.2026).
+   Brennholz / Industrieholz (1–3 m): ohne Übermaß, Länge = Bestelllänge.
+   Durchmesser: in der Praxis auf ganze Zentimeter ABGERUNDET (gilt für alle neu eingetragenen Stämme). */
+const SORTEN = {
+  abschnitt: { name: "Abschnitt", laengen: [3, 4, 5, 6], standard: 5, hinweis: {3: "Abschnitt", 4: "häufig", 5: "häufig", 6: "längster Standard"} },
+  langholz:  { name: "Langholz",  laengen: null },
+  brennholz: { name: "Brennholz", laengen: [1, 2, 3], standard: 1, hinweis: {1: "Meterholz", 2: "Schichtholz", 3: "Kurzholz"} },
+};
+/* Längenübermaß in m: 1 % der Länge, auf ganze cm aufgerundet, mindestens 10 cm */
+function laengenUebermass(l){
+  if(!(l > 0)) return 0;
+  return Math.max(0.10, Math.ceil(l - 1e-9) / 100);
+}
+/* Rechen-Länge (m) je Sorte. Abschnitt/Brennholz: die Bestelllänge. Langholz: gemessen − Übermaß, auf 10 cm abgerundet
+   (größte Länge auf 10 cm, deren Länge + Übermaß noch in die gemessene Länge passt). */
+function rechenLaenge(sorte, l){
+  if(!(l > 0)) return 0;
+  if(sorte !== "langholz") return l;
+  let b = Math.floor((l - laengenUebermass(l)) * 10 + 1e-9) / 10;
+  while(b + 0.1 + laengenUebermass(b + 0.1) <= l + 1e-9) b = Math.round((b + 0.1) * 10) / 10;
+  while(b > 0 && b + laengenUebermass(b) > l + 1e-9) b = Math.round((b - 0.1) * 10) / 10;
+  return Math.max(0, b);
+}
+/* Ablängen auf … (m): nur bei Abschnitten, Bestelllänge + Übermaß */
+function ablaengLaenge(l){ return l > 0 ? Math.round((l + laengenUebermass(l)) * 100) / 100 : 0; }
+/* Durchmesser wie im Wald: auf ganze cm abgerundet */
+function rechenDurchmesser(d){ return d > 0 ? Math.floor(d + 1e-9) : 0; }

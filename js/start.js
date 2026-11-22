@@ -1,4 +1,4 @@
-/* Holzmeter – Start
+/* HolzBuch – Start
    Läuft als letzter Baustein: Daten aus dem App-Speicher zurückholen, erste Anzeige, Zurück-Taste (Android), Service Worker.
    Steht am Ende, damit alle anderen Bausteine schon geladen sind. */
 "use strict";

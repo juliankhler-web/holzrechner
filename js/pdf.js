@@ -1,4 +1,4 @@
-/* Holzmeter – PDF und Drucken
+/* HolzBuch – PDF und Drucken
    In der App: PDF mit jsPDF bauen und teilen. Im Browser: Druckvorlage („Als PDF sichern“).
    Braucht: app.js. */
 "use strict";
@@ -55,7 +55,7 @@ async function nativPdf(o){
   const body = items.map((it, i) => {
     const ded = it.bark ? barkDeduction(it.species, it.diameter) : 0;
     const eff = it.bark ? Math.max(0, it.diameter - ded) : it.diameter;
-    const row = [String(i+1), fmt(it.length,2), RINDENABZUG[it.species]?.name || "–", fmt(it.diameter,1),
+    const row = [String(i+1), fmt(it.length,2), RINDENABZUG[it.species]?.name || "–", fmt(it.diaEin != null ? it.diaEin : it.diameter,1),
                  it.bark ? "-" + fmt(ded,0) + " cm" : "–", fmt(eff,1), String(it.qty), fmt(volumeTotal(it))];
     if(t.wtOn) row.push(fmt(itemKg(it, t.w) || 0, 0));
     return row;
@@ -96,7 +96,7 @@ async function nativPdf(o){
     const pl = doc.splitTextToSize(o.payment, W); doc.text(pl, L, y); y += pl.length * 4.4;
   }
   const fuss = "Ø gem. = gemessener Mitten-Ø (mit Rinde) · Rinde = abgezogene Rindenstärke („–“ = nicht abgezogen, Ø enthält Rinde) · Ø ger. = für die Berechnung verwendeter Ø · Fm = Festmeter (m³). " +
-    "Berechnung nach Huber-Formel V = pi·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII)." +
+    "Berechnung nach Huber-Formel V = pi·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII)." + (items.some(x => x.sorte) ? " Länge = Bestelllänge ohne Übermaß (Langholz: gemessen − Übermaß 1 %, mind. 10 cm, auf 10 cm abgerundet; Brennholz ohne Übermaß); Ø auf ganze cm abgerundet." : "") +
     (o.hasOrient ? " Kiefer/Eiche/Lärche = RVR-Orientierungswert (regional abweichend)." : "") +
     (t.wtOn ? ` Gewicht: Raumdichte (kg Trockenmasse je Festmeter, LWF-Merkblatt 12/Kollmann) ÷ (1 − Wassergehalt), Festmeter frisch gemessen.${o.hasNaeh ? " Tanne/Lärche/Douglasie/Esche = Näherungswerte." : ""}` : "") +
     (o.showRm ? ` Umrechnung Brennholz: 1 Fm = ${fmt(o.rmF,2)} Rm = ${fmt(o.srmF,2)} Srm (Richtwert gespaltenes Scheitholz).` : "") +
@@ -148,7 +148,7 @@ els.pdfBtn.addEventListener("click", ()=>{
     const dedTxt = it.bark ? "−" + fmt(ded,0) + " cm" : "–";
     const kgCell = t.wtOn ? `<td class="r">${fmt(itemKg(it,t.w) || 0,0)}</td>` : "";
     rows += `<tr><td>${i+1}</td><td class="r">${fmt(it.length,2)}</td><td>${art}</td>`
-          + `<td class="r">${fmt(it.diameter,1)}</td><td class="r">${dedTxt}</td><td class="r">${fmt(eff,1)}</td>`
+          + `<td class="r">${fmt(it.diaEin != null ? it.diaEin : it.diameter,1)}</td><td class="r">${dedTxt}</td><td class="r">${fmt(eff,1)}</td>`
           + `<td class="r">${it.qty}</td><td class="r">${fmt(volumeTotal(it))}</td>${kgCell}</tr>`;
   });
 
@@ -214,7 +214,7 @@ els.pdfBtn.addEventListener("click", ()=>{
       ${money}
     </div>
     ${payment ? `<div class="p-pay"><span class="p-plabel">Zahlung</span>${nl2br(payment)}</div>` : ""}
-    <div class="p-foot">Ø gem. = gemessener Mitten-Ø (mit Rinde) · Rinde = abgezogene Rindenstärke („–“ = nicht abgezogen, Ø enthält Rinde) · Ø ger. = für die Berechnung verwendeter Ø · Fm = Festmeter (m³).<br>Berechnung nach Huber-Formel V = π·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII).${hasOrient ? " Kiefer/Eiche/Lärche = RVR-Orientierungswert (regional abweichend)." : ""}${wtNote}${showRm ? ` Umrechnung Brennholz: 1 Fm = ${fmt(rmF,2)} Rm = ${fmt(srmF,2)} Srm (Richtwert gespaltenes Scheitholz).` : ""}<br>erstellt mit ${escapeHtml(appName)}</div>`;
+    <div class="p-foot">Ø gem. = gemessener Mitten-Ø (mit Rinde) · Rinde = abgezogene Rindenstärke („–“ = nicht abgezogen, Ø enthält Rinde) · Ø ger. = für die Berechnung verwendeter Ø · Fm = Festmeter (m³).<br>Berechnung nach Huber-Formel V = π·(Ø/200)²·Länge · Rindenabzug in cm nach Baumart (RVR, Anlage VII).${items.some(x => x.sorte) ? " Länge = Bestelllänge ohne Übermaß (Langholz: gemessen − Übermaß 1 %, mind. 10 cm, auf 10 cm abgerundet; Brennholz ohne Übermaß); Ø auf ganze cm abgerundet." : ""}${hasOrient ? " Kiefer/Eiche/Lärche = RVR-Orientierungswert (regional abweichend)." : ""}${wtNote}${showRm ? ` Umrechnung Brennholz: 1 Fm = ${fmt(rmF,2)} Rm = ${fmt(srmF,2)} Srm (Richtwert gespaltenes Scheitholz).` : ""}<br>erstellt mit ${escapeHtml(appName)}</div>`;
 
   const prevTitle = document.title;
   const isoLocal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;

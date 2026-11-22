@@ -1,4 +1,4 @@
-/* Holzmeter – Kantholz-Bereich (Oberfläche)
+/* HolzBuch – Kantholz-Bereich (Oberfläche)
    Mindest-Zopf, „Mein Ø“, „Aus Holzliste“ mit Auswahl der Maße und Abhaken.
    Braucht: zopf.js, holzliste-daten.js, app.js. */
 "use strict";

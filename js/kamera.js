@@ -1,4 +1,4 @@
-/* Holzmeter – Durchmesser per Foto messen (Oberfläche)
+/* HolzBuch – Durchmesser per Foto messen (Oberfläche)
    Braucht: app.js. */
 "use strict";
 

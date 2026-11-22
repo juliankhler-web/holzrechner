@@ -1,4 +1,4 @@
-/* Holzmeter – Holzliste (Oberfläche)
+/* HolzBuch – Holzliste (Oberfläche)
    Projekte, Positionen abhaken, PDF zum Abhaken, Einlesen mit Prüf-Ansicht.
    Braucht: holzliste-daten.js, holzliste-parser.js, app.js. */
 "use strict";
@@ -72,6 +72,8 @@ function lsProjektHtml(pr){
     <div class="row">
       <div class="field"><label for="lsB">Breite (cm)</label><input type="text" id="lsB" inputmode="decimal" placeholder="8" value="${val("b", "")}"></div>
       <div class="field"><label for="lsH">Höhe (cm)</label><input type="text" id="lsH" inputmode="decimal" placeholder="18" value="${val("h", "")}"></div>
+    </div>
+    <div class="row">
       <div class="field"><label for="lsL">Länge (m)</label><input type="text" id="lsL" inputmode="decimal" placeholder="6,20" value="${val("l", "")}"></div>
       <div class="field small"><label for="lsN">Stück</label><input type="number" id="lsN" inputmode="numeric" min="1" step="1" value="${val("n", "1")}"></div>
     </div>
@@ -89,9 +91,9 @@ function lsProjektHtml(pr){
       return `<div class="card item ls-row${p.done ? " done" : ""}${lsEditPos === p.id ? " active" : ""}">
         <button type="button" class="ls-chk${p.done ? " on" : ""}" data-ls-done="${p.id}" role="checkbox" aria-checked="${p.done ? "true" : "false"}" aria-label="${escapeHtml(p.bez || "Position " + nr)} erledigt"><span>${p.done ? lsIco.check : lsFertig(p) > 0 ? "<i>" + lsFertig(p) + "</i>" : ""}</span></button>
         <div class="info">
-          <div class="fm">${escapeHtml(p.bez || "Position " + nr)} <span class="mult">· ${p.n || 1} Stück</span></div>
+          <div class="fm">${escapeHtml(p.bez || "Position " + nr)}</div>
           ${lsFertig(p) > 0 && !p.done ? `<div class="ls-teil">${lsFertig(p)} von ${p.n || 1} Stück fertig</div>` : ""}
-          <div class="meta">${lsCm(p.b)}/${lsCm(p.h)} cm · ${isFinite(p.l) ? fmt(p.l, 2) : "?"} m · ${fmt(lsM3(p))} m³${fehlt ? ' · <b class="ls-warn">Maß fehlt</b>' : ""}</div>
+          <div class="meta">${p.n || 1} Stück · ${lsCm(p.b)}/${lsCm(p.h)} cm · ${isFinite(p.l) ? fmt(p.l, 2) : "?"} m · ${fmt(lsM3(p))} m³${fehlt ? ' · <b class="ls-warn">Maß fehlt</b>' : ""}</div>
         </div>
         <button type="button" class="icon-btn edit" data-ls-zopf="${p.id}" aria-label="Im Kantholz-Rechner prüfen" title="Nötigen Zopf-Ø im Kantholz-Rechner zeigen">${lsIco.zopf}</button>
         <button type="button" class="icon-btn edit" data-ls-edit="${p.id}" aria-label="Ändern">${lsIco.edit}</button>

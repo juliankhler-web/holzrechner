@@ -1,4 +1,4 @@
-/* Holzmeter – Holzliste einlesen (reine Rechenlogik, ohne Bildschirm)
+/* HolzBuch – Holzliste einlesen (reine Rechenlogik, ohne Bildschirm)
    PDF-/Foto-Zeilen, CSV, Excel, XML/BTLx und cadwork-Listendatei (.cwlm) → Positionen.
    Braucht: nichts (PDF-Leser und Texterkennung liefert holzliste.js). Wird geprüft in tests/ und _holzliste/test_parser.mjs. */
 "use strict";

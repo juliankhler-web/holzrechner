@@ -1,11 +1,13 @@
-/* Holzmeter – Grundgerüst der Oberfläche
+/* HolzBuch – Grundgerüst der Oberfläche
    Zustand, Speicher (Gerät + App-Speicher), Eingabefelder, Stämme-Liste, Brennholz, Preis, Reiter, Menüleiste.
    Braucht: rechnen.js. Läuft nur im Browser/in der App. */
 "use strict";
 
 let zMode = "q";
 let zProjWahl = null;       // Kantholz „Aus Holzliste“: gewähltes Projekt
-const TABS = ["stamm", "brenn", "kant", "liste", "rech"];
+const TABS = ["stamm", "rech", "brenn", "liste", "kant"];   // Reihenfolge der Leiste (Julian 22.11.2026)
+let sorte = "abschnitt";           // Holzsorte im Eingabe-Formular
+let lenWahl = {abschnitt: "5", brennholz: "1"};   // zuletzt gewählte Länge je Sorte ("eigen" = eigene Länge)
 let curTab = "stamm";
 let lsOpen = null, lsHide = false;     // Holzliste: offenes Projekt, erledigte ausblenden
 
@@ -55,10 +57,12 @@ const els = {
   zVal:$("zVal"), zHint:$("zHint"), zDraw:$("zDraw"),
   zModeQ:$("zModeQ"), zModeD:$("zModeD"), zDiaRow:$("zDiaRow"), zDia:$("zDia"), zValK:$("zValK"),
   zValSub:$("zValSub"),
+  lenSel:$("lenSel"), lenSelRow:$("lenSelRow"), lenRow:$("lenRow"), lenLbl:$("lenLbl"), lenHint:$("lenHint"), lenHintTxt:$("lenHintTxt"),
+  totalBox:$("totalBox"), toStamm:$("toStamm"), toStammTxt:$("toStammTxt"), vatHint:$("vatHint"),
 };
 
 
-const DEFAULT_APP_NAME = "Holzmeter";
+const DEFAULT_APP_NAME = "HolzBuch";
 let appName = DEFAULT_APP_NAME;
 
 
@@ -88,6 +92,9 @@ function loadPrefs(){
     const p = JSON.parse(localStorage.getItem(K_PREFS)) || {};
     els.barkToggle.checked = !!p.bark;
     if(p.species) setSelect(els.species, p.species);
+    if(SORTEN[p.sorte]) sorte = p.sorte;
+    if(p.lenWahl && typeof p.lenWahl === "object") Object.assign(lenWahl, p.lenWahl);
+    if(p.lenEigen != null) els.length.value = p.lenEigen;
     els.wtToggle.checked = !!p.wtOn;
     if(p.wtPreset) setSelect(els.wtPreset, p.wtPreset);
     if(p.wtW != null) els.wtW.value = p.wtW;
@@ -118,13 +125,14 @@ function loadPrefs(){
     if(p.payment != null) els.payment.value = p.payment;
     appName = DEFAULT_APP_NAME;   /* Umbenennen gibt es nicht mehr: früher gespeicherte Namen werden ignoriert */
   }catch(e){}
+  sorteAnzeigen();
   syncReveals();
   applyAppName(appName);
 }
 function savePrefs(){
   let v = null;
   try{ localStorage.setItem(K_PREFS, v = JSON.stringify({
-    bark:els.barkToggle.checked, species:els.species.value,
+    bark:els.barkToggle.checked, species:els.species.value, sorte, lenWahl, lenEigen:els.length.value,
     price:els.price.value, vat:els.vatToggle.checked,
     vatRate:els.vatRate.value, vatCustom:els.vatCustom.value,
     issuer:els.issuer.value, recipient:els.recipient.value,
@@ -141,7 +149,7 @@ function savePrefs(){
 /* App-Name (oben editierbar) auf UI, Tab-Titel, iOS-Kachel und Android-Manifest anwenden. */
 function appIconDataUri(){
   const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'>"
-    + "<rect width='512' height='512' rx='104' fill='#b5651d'/>"
+    + "<rect width='512' height='512' rx='104' fill='#6B7F6E'/>"
     + "<g transform='translate(112,112) scale(12)' fill='#ffffff'>"
     + "<path d='M12 2 6 9h3l-4 5h3l-4 5h16l-4-5h3l-4-5h3z'/><rect x='11' y='19' width='2' height='3'/></g></svg>";
   return "data:image/svg+xml," + encodeURIComponent(svg);
@@ -151,7 +159,7 @@ function iconPng(size){
   try{
     const c = document.createElement("canvas"); c.width=size; c.height=size;
     const x = c.getContext("2d");
-    x.fillStyle = "#b5651d";
+    x.fillStyle = "#6B7F6E";
     if(x.roundRect){ x.beginPath(); x.roundRect(0,0,size,size,Math.round(size*0.2)); x.fill(); }
     else x.fillRect(0,0,size,size);
     const s = size/24*0.58, off=(size-24*s)/2;
@@ -206,6 +214,10 @@ function syncReveals(){
   els.rateField.style.opacity = vat ? "1" : ".4";
   els.rateField.style.pointerEvents = vat ? "auto" : "none";
   els.customRateRow.classList.toggle("open", vat && els.vatRate.value === "custom");
+  const vWahl = vat ? els.vatRate.value : "0";
+  document.querySelectorAll("#vatSeg button").forEach(b => { const on = b.dataset.vat === vWahl; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+  if(els.vatHint) els.vatHint.textContent = !vat ? "Ohne MwSt: Preis gilt netto (z. B. Kleinunternehmer)." :
+    vWahl === "19" ? "Regelsatz." : vWahl === "7" ? "Ermäßigt, z. B. Brennholz." : vWahl === "5.5" ? "Durchschnittssatz Land- und Forstwirtschaft (§ 24 UStG)." : "Eigenen Satz unten eintragen.";
   updateSpeciesHint();
 }
 function updateSpeciesHint(){
@@ -223,7 +235,7 @@ function render(){
   if(items.length === 0){
     els.list.innerHTML = `<div class="card empty">
       <svg viewBox="0 0 24 24"><path d="M12 2 6 9h3l-4 5h3l-4 5h16l-4-5h3l-4-5h3z"/></svg>
-      Noch keine Balken.<br>Länge und Durchmesser eingeben und „Hinzufügen" tippen.</div>`;
+      Noch keine Stämme.<br>Holzsorte und Länge wählen, Ø eingeben und „Hinzufügen“ tippen.</div>`;
     els.clearBtn.style.display = "none";
   }else{
     els.clearBtn.style.display = "block";
@@ -233,12 +245,17 @@ function render(){
       const tot = round3(volumeTotal(it));
       const artName = RINDENABZUG[it.species]?.name || "";
       let meta;
+      const S = SORTEN[it.sorte];
+      const laengeTxt = !S ? `${fmt(it.length,2)} m` :
+        it.sorte === "langholz" ? `Langholz ${fmt(it.lenEin,2)} m gemessen → ${fmt(it.length,2)} m` :
+        it.sorte === "abschnitt" ? `Abschnitt ${fmt(it.length,2)} m (ablängen ${fmt(ablaengLaenge(it.length),2)} m)` : `Brennholz ${fmt(it.length,2)} m`;
+      const diaTxt = (S && it.diaEin != null && it.diaEin !== it.diameter) ? `${fmt(it.diaEin,1)}→${fmt(it.diameter,0)}` : fmt(it.diameter, S ? 0 : 1);
       if(it.bark){
         const ded = barkDeduction(it.species, it.diameter);
         const eff = Math.max(0, it.diameter - ded);
-        meta = `${fmt(it.length,2)} m · ${artName} · Ø ${fmt(it.diameter,1)}→${fmt(eff,1)} cm · −${fmt(ded,0)} cm Rinde`;
+        meta = `${laengeTxt} · ${artName} · Ø ${diaTxt} cm · −${fmt(ded,0)} cm Rinde = Ø ${fmt(eff, S ? 0 : 1)} cm`;
       }else{
-        meta = `${fmt(it.length,2)} m · ${artName} · Ø ${fmt(it.diameter,1)} cm · mit Rinde`;
+        meta = `${laengeTxt} · ${artName} · Ø ${diaTxt} cm · mit Rinde`;
       }
       const mult = it.qty > 1 ? `<span class="mult">(${it.qty} × ≈ ${fmt(each)} Fm)</span>` : "";
       const shown = fmt(tot);
@@ -267,7 +284,10 @@ function render(){
   const t = computeTotals();
   els.totalVal.textContent = fmt(t.totalFm);
   els.count.textContent = t.stems === 1 ? "1 Stamm" : t.stems + " Stämme";
-  els.totalSub.textContent = items.length ? "Summe aller Balken" : "Länge × Mittendurchmesser eingeben";
+  els.totalSub.textContent = items.length ? "Summe aller Stämme" : "Noch keine Stämme eingetragen";
+  /* Rechnung und Brennholz rechnen mit den Stämmen – das sieht man in der Gesamt-Karte */
+  els.totalBox.classList.toggle("leer", !items.length && curTab !== "stamm");
+  els.toStammTxt.textContent = items.length ? "aus deinen Stämmen · ändern" : "Zuerst Stämme eintragen";
 
   /* € in Gesamt-Karte + Aufschlüsselung */
   if(t.price > 0 && items.length){
@@ -324,17 +344,75 @@ function updateWtHint(w){
     `Der Festmeter gilt frisch, wie im Wald gemessen. Bei „mit Rinde“ steckt die Rinde im Volumen – das Gewicht ist dann leicht zu hoch.`;
 }
 
+/* --- Holzsorte und Länge (wie in der Praxis, siehe rechnen.js) --- */
+const mStr = (v) => fmt(v, 2);
+function sorteAnzeigen(){
+  document.querySelectorAll("#sorteSeg button").forEach(b => { const on = b.dataset.sorte === sorte; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+  const S = SORTEN[sorte];
+  if(S.laengen){
+    const w = lenWahl[sorte] || String(S.standard);
+    els.lenSel.innerHTML = S.laengen.map(l => `<option value="${l}">${l} m · ${S.hinweis[l]}</option>`).join("") + `<option value="eigen">Eigene Länge …</option>`;
+    els.lenSel.value = [...els.lenSel.options].some(o => o.value === w) ? w : String(S.standard);
+    els.lenSelRow.style.display = "";
+    els.lenRow.style.display = els.lenSel.value === "eigen" ? "" : "none";
+    els.lenLbl.textContent = "Eigene Bestelllänge (m)";
+    els.length.placeholder = sorte === "brennholz" ? "1,50" : "4,50";
+  }else{
+    els.lenSelRow.style.display = "none";
+    els.lenRow.style.display = "";
+    els.lenLbl.textContent = "Gemessene Länge (m)";
+    els.length.placeholder = "18,40";
+  }
+  laengeHinweis();
+}
+/* eingegebene Länge (Bestelllänge bzw. gemessen) */
+function laengeEingabe(){
+  const S = SORTEN[sorte];
+  if(S.laengen && els.lenSel.value !== "eigen") return +els.lenSel.value;
+  return num(els.length.value);
+}
+function laengeHinweis(){
+  const l = laengeEingabe(), d = num(els.diameter.value);
+  let t = "";
+  if(sorte === "abschnitt") t = l > 0 ? `<b>Ablängen auf ${mStr(ablaengLaenge(l))} m</b> · gerechnet mit ${mStr(l)} m (Übermaß ${fmt(laengenUebermass(l) * 100, 0)} cm zählt nicht)` : "Bestelllänge wählen – das Übermaß zählt nicht mit.";
+  else if(sorte === "langholz") t = l > 0 ? `<b>Gerechnet mit ${mStr(rechenLaenge("langholz", l))} m</b> · gemessen ${mStr(l)} m − Übermaß ${fmt(laengenUebermass(l) * 100, 0)} cm, auf 10 cm abgerundet` : "Länge messen – das Übermaß (1 %, mind. 10 cm) zieht die App ab.";
+  else t = l > 0 ? `<b>Gerechnet mit ${mStr(l)} m</b> · Brenn- und Industrieholz ohne Übermaß` : "Länge wählen – Brennholz ohne Übermaß.";
+  if(d > 0 && rechenDurchmesser(d) !== d) t += `<br>Ø ${fmt(d, 1)} cm → <b>gerechnet ${rechenDurchmesser(d)} cm</b> (auf ganze cm abgerundet)`;
+  els.lenHintTxt.innerHTML = t;
+}
+document.getElementById("sorteSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-sorte]"); if(!b || b.dataset.sorte === sorte) return;
+  sorte = b.dataset.sorte; sorteAnzeigen(); savePrefs();
+});
+els.lenSel.addEventListener("change", () => {
+  lenWahl[sorte] = els.lenSel.value; sorteAnzeigen(); savePrefs();
+  if(els.lenSel.value === "eigen") els.length.focus();
+});
+els.length.addEventListener("input", () => { laengeHinweis(); savePrefs(); });
+els.diameter.addEventListener("input", laengeHinweis);
+document.getElementById("vatSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-vat]"); if(!b) return;
+  if(b.dataset.vat === "0") els.vatToggle.checked = false;
+  else { els.vatToggle.checked = true; els.vatRate.value = b.dataset.vat; }
+  syncReveals(); savePrefs(); render();
+  if(b.dataset.vat === "custom") setTimeout(() => els.vatCustom.focus(), 50);
+});
+els.toStamm.addEventListener("click", () => { showTab("stamm"); savePrefs(); window.scrollTo({top: 0}); });
+
 /* --- Aktionen --- */
 els.form.addEventListener("submit", (e)=>{
   e.preventDefault();
-  const length = num(els.length.value);
-  const diameter = num(els.diameter.value);
+  const lenEin = laengeEingabe();
+  const diaEin = num(els.diameter.value);
   let qty = parseInt(els.qty.value, 10);
   if(!qty || qty < 1) qty = 1;
-  if(!(length > 0)){ els.length.focus(); return; }
-  if(!(diameter > 0)){ els.diameter.focus(); return; }
+  const length = rechenLaenge(sorte, lenEin), diameter = rechenDurchmesser(diaEin);
+  if(!(lenEin > 0) || !(length > 0)){ (els.lenRow.style.display === "none" ? els.lenSel : els.length).focus();
+    if(lenEin > 0) alert("Die Länge ist zu kurz für das Übermaß."); return; }
+  if(!(diaEin > 0) || !(diameter > 0)){ els.diameter.focus(); if(diaEin > 0) alert("Bitte mindestens 1 cm eingeben."); return; }
 
-  const data = { length, diameter, qty, bark: els.barkToggle.checked, species: els.species.value };
+  /* length/diameter = Rechenwerte (Praxis-Regeln), lenEin/diaEin = was eingegeben bzw. gemessen wurde */
+  const data = { sorte, lenEin, diaEin, length, diameter, qty, bark: els.barkToggle.checked, species: els.species.value };
   if(editId){
     const it = items.find(x=>x.id===editId);
     if(it) Object.assign(it, data);
@@ -346,14 +424,24 @@ els.form.addEventListener("submit", (e)=>{
   save(); savePrefs(); render(); resetForm();
 });
 
-function resetForm(){ els.length.value=""; els.diameter.value=""; els.qty.value="1"; els.length.focus(); }
+/* Nach dem Hinzufügen bleiben alle Werte stehen (Julian 22.11.2026): der Ø ist markiert, so tippt man nur den nächsten Ø. */
+function resetForm(){ laengeHinweis(); els.diameter.focus(); try{ els.diameter.select(); }catch(e){} }
 
 function startEdit(id){
   const it = items.find(x=>x.id===id);
   if(!it) return;
   editId = id;
-  els.length.value = String(it.length).replace(".", ",");
-  els.diameter.value = String(it.diameter).replace(".", ",");
+  if(it.sorte && SORTEN[it.sorte]){
+    sorte = it.sorte;
+    const S = SORTEN[sorte], le = it.lenEin != null ? it.lenEin : it.length;
+    if(S.laengen){ lenWahl[sorte] = S.laengen.includes(le) ? String(le) : "eigen"; if(!S.laengen.includes(le)) els.length.value = String(le).replace(".", ","); }
+    else els.length.value = String(le).replace(".", ",");
+  }else{
+    /* Stamm aus einer älteren Version (ohne Holzsorte): als eigene Länge übernehmen */
+    sorte = "abschnitt"; lenWahl.abschnitt = "eigen"; els.length.value = String(it.length).replace(".", ",");
+  }
+  sorteAnzeigen();
+  els.diameter.value = String(it.diaEin != null ? it.diaEin : it.diameter).replace(".", ",");
   els.qty.value = it.qty;
   els.barkToggle.checked = it.bark;
   els.species.value = it.species;
@@ -362,13 +450,13 @@ function startEdit(id){
   els.submitLabel.textContent = "Aktualisieren";
   render();
   window.scrollTo({top:0, behavior:"smooth"});
-  els.length.focus();
+  els.diameter.focus();
 }
 function stopEdit(){ editId=null; document.body.classList.remove("editing"); els.submitLabel.textContent="Hinzufügen"; }
-els.cancelBtn.onclick = ()=>{ stopEdit(); resetForm(); render(); };
+els.cancelBtn.onclick = ()=>{ stopEdit(); render(); laengeHinweis(); };
 
 function removeItem(id){
-  if(id === editId){ stopEdit(); resetForm(); }
+  if(id === editId){ stopEdit(); }
   items = items.filter(x=>x.id!==id);
   save(); render();
 }
@@ -411,14 +499,16 @@ els.wtW.addEventListener("input", ()=>{
   savePrefs(); render();
 });
 /* --- Untere Leiste: Bereiche umschalten --- */
-const TAB_UNTERTITEL = {stamm: "Festmeter (Fm) berechnen", brenn: "Raummeter, Schüttraummeter und Gewicht",
-  kant: "Mindest-Zopf und passende Balken", liste: "Projekte abhaken und Listen einlesen", rech: "Preis, MwSt und PDF-Rechnung"};
+const TAB_UNTERTITEL = {stamm: "Festmeter berechnen", rech: "Preis, MwSt und PDF", brenn: "Raummeter und Gewicht",
+  liste: "Projekte abhaken", kant: "Mindest-Zopf und Balken"};
 function showTab(t){
   curTab = TABS.includes(t) ? t : "stamm";
   const sub = document.getElementById("appSub"); if(sub) sub.textContent = TAB_UNTERTITEL[curTab] || "";
   if(curTab === "kant" && zMode === "p" && typeof zPlanRender === "function") renderZopf();   // Holzliste kann sich geändert haben
   document.querySelectorAll("[data-tab]").forEach(el =>
     el.classList.toggle("tab-hide", !el.dataset.tab.split(" ").includes(curTab)));
+  document.body.classList.toggle("tab-folge", curTab === "rech" || curTab === "brenn");
+  if(els.totalBox) els.totalBox.classList.toggle("leer", !items.length && curTab !== "stamm");
   document.querySelectorAll("#tabbar button").forEach(b => {
     const on = b.dataset.go === curTab;
     b.classList.toggle("on", on);

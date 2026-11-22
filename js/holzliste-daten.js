@@ -1,4 +1,4 @@
-/* Holzmeter – Holzliste: reine Daten-Helfer (ohne Bildschirm)
+/* HolzBuch – Holzliste: reine Daten-Helfer (ohne Bildschirm)
    Teilmengen „x von n fertig“, Kubikmeter, Summen eines Projekts, offene Positionen für den Kantholz-Vorschlag.
    Braucht: rechnen.js (fmt). Wird geprüft in tests/. */
 "use strict";

@@ -1,4 +1,4 @@
-/* Holzmeter – Kantholz-Geometrie (reine Rechenlogik, ohne Bildschirm)
+/* HolzBuch – Kantholz-Geometrie (reine Rechenlogik, ohne Bildschirm)
    Mindest-Zopf-Ø nach Schnittklassen, wie viele Balken in einen Stamm passen, Zeichnung als SVG-Text,
    Vorschlag „ein Maß je Stamm“ aus der Holzliste (zGleichOptionen).
    Braucht: rechnen.js (fmt). Wird geprüft in tests/. */
@@ -13,10 +13,10 @@
    Die Stamm-Mitte wird so verschoben, dass der nötige Ø am kleinsten ist.
    Gegen eine gedruckte Mindest-Zopf-Tabelle geprüft: im Mittel unter 1 mm Abweichung. */
 const Z_KLASSEN = {
-  S:"S · scharfkantig (ohne Baumkante)",
-  A:"A · vollkantig (Baumkante bis 1/8)",
-  B:"B · baumkantig (Baumkante bis 1/3)",
-  C:"C · gestreift (jede Seite angesägt)",
+  S:"S · scharfkantig (ohne Kante)",
+  A:"A · vollkantig (Kante bis 1/8)",
+  B:"B · baumkantig (Kante bis 1/3)",
+  C:"C · gestreift (Seiten angesägt)",
 };
 const Z_ARTEN = [
   {n:1, t:"1 Stück"},
