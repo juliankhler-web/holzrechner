@@ -1,7 +1,7 @@
-/* Service Worker für Holzmeter.
+/* Service Worker für HolzBuch (früher Holzmeter).
    Strategie: network-first mit Cache-Fallback — online bekommt man IMMER die
    neueste Version (Updates greifen sofort), offline wird aus dem Cache geliefert. */
-const CACHE = "holzmeter-v3";
+const CACHE = "holzbuch-v4";
 const ASSETS = ["./", "./index.html",
   "./js/rechnen.js", "./js/zopf.js", "./js/holzliste-daten.js", "./js/holzliste-parser.js",
   "./js/app.js", "./js/pdf.js", "./js/kantholz.js", "./js/kamera.js", "./js/holzliste.js", "./js/start.js"];
